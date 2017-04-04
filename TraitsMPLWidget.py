@@ -65,6 +65,7 @@ class _ScrollableMPLFigureEditor(Editor):
         frame_canvas.setLayout(vbox)
         return frame_canvas
 
+
 class _MPLFigureEditor(Editor):
     scrollable = True
     canvas = Instance(FigureCanvas)

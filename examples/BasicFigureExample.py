@@ -73,10 +73,14 @@ class WidgetFigure(BasicFigureExample):
 
     def connectSelector(self):
         print(self.__class__.__name__, ": Connecting Selector")
-        # try:
         self.rs = RectangleSelector(self.axes_selector, self.rectangleSelectorFunc, drawtype='box', useblit=True, button=[3])
-        # except:
-        #     print(self.__class__.__name__, ": Canvas is not ready.")
+
+    def get_selectionPatches_names(self):
+        self.selectionPatches_names = []
+        for i in self.selectionPatches:
+            self.selectionPatches_names.append(i.text)
+
+        return self.selectionPatches_names
 
     def rectangleSelectorFunc(self, eclick, erelease, cmap=mpl.cm.jet):
         """
@@ -103,6 +107,18 @@ class WidgetFigure(BasicFigureExample):
         self.selectionPatches.append(self.anRect)
 
         self.canvas.draw()
+
+    def get_SelectedPatch(self, patch):
+        k = 0
+        for i, k in enumerate(self.selectionPatches):
+            if i.text == patch:
+                break
+
+        return self.selectionPatches[k]
+
+
+    def _clearPatchesBtn_fired(self):
+        self.clear_selectionPatches()
 
     def clear_selectionPatches(self):
         if len(self.selectionPatches) != 0:
