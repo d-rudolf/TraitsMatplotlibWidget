@@ -12,6 +12,7 @@ import matplotlib as mpl
 mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
@@ -23,6 +24,8 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+from matplotlib.widgets import RectangleSelector, SpanSelector
+from DraggableResizableRectangle import DraggableResizeableRectangle, AnnotatedRectangle
 
 import cPickle, wx
 
@@ -856,13 +859,98 @@ class BasicFigure(MinimalFigure):
         return traits_options_view
 
 
+class WidgetFigure(BasicFigure):
+    selector_btn = Button('Selector')
+    selectionPatches = List()  # contains patches for image stack analysis
+    clearPatchesBtn = Button('Clear Patches')
+    nColorsFromColormap = Int(5)
+
+    def _selector_btn_fired(self):
+        self.connectSelector()
+
+    def connectSelector(self):
+        print(self.__class__.__name__, ": Connecting Selector")
+        self.rs = RectangleSelector(self.axes_selector, self.rectangleSelectorFunc, drawtype='box', useblit=True, button=[3])
+
+    def get_selectionPatches_names(self):
+        self.selectionPatches_names = []
+        for i in self.selectionPatches:
+            self.selectionPatches_names.append(i.text)
+
+        return self.selectionPatches_names
+
+    def rectangleSelectorFunc(self, eclick, erelease, cmap=mpl.cm.jet):
+        """
+            Usage:
+            @on_trait_change('fig:selectionPatches:rectUpdated')
+            function name:
+                for p in self.fig.selectionPatches:
+                    do p
+
+        """
+        print(self.__class__.__name__, "Rectangle Selector:")
+        print(self.__class__.__name__, "eclick: {} \n erelease: {}".format(eclick, erelease))
+        print()
+
+        x1, y1 = eclick.xdata, eclick.ydata
+        x2, y2 = erelease.xdata, erelease.ydata
+
+        cNorm = mpl.colors.Normalize(vmin=0, vmax=self.nColorsFromColormap)
+        scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cmap)
+
+        color = scalarMap.to_rgba(len(self.selectionPatches) + 1)
+
+        self.anRect = AnnotatedRectangle(self.axes_selector, x1, y1, x2, y2, 'region ' + str(len(self.selectionPatches)), color=color)
+        self.selectionPatches.append(self.anRect)
+
+        self.canvas.draw()
+
+    def get_SelectedPatch(self, patch):
+        k = 0
+        for i, k in enumerate(self.selectionPatches):
+            if i.text == patch:
+                break
+
+        return self.selectionPatches[k]
+
+
+    def _clearPatchesBtn_fired(self):
+        self.clear_selectionPatches()
+
+    def clear_selectionPatches(self):
+        if len(self.selectionPatches) != 0:
+            print(self.__class__.__name__, ": Clearing selection patches")
+            for p in self.selectionPatches:
+                try:
+                    p.remove()
+                except ValueError:
+                    print(self.__class__.__name__, ": Patch was not found.")
+
+            self.selectionPatches = []
+            self.canvas.draw()
+
+    def options_group(self):
+        g = HGroup(
+            UItem('options_btn'),
+            UItem('clear_btn'),
+            UItem('line_selector', visible_when='not img_bool'),
+            UItem('copy_data_btn', visible_when='not img_bool'),
+            HGroup(
+                Item('normalize_bool', label='normalize'),
+                Item('log_bool', label='log scale'),
+                Item('cmap_selector', label='cmap', visible_when='img_bool'),
+                UItem('image_slider_btn', visible_when='img_bool'),
+                UItem('save_fig_btn'),
+                UItem('selector_btn'),
+                UItem('clearPatchesBtn'),
+            ),
+        )
+        return g
+
 
 class BlittedFigure(BasicFigure):
     def plot(self, *args, **kwargs):
         self.blit(*args, **kwargs)
-
-
-
 
 
 if __name__ == '__main__':
