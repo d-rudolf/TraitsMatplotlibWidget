@@ -2,9 +2,8 @@ from __future__ import print_function, division
 
 from TraitsMPLWidget import WidgetFigure, BasicFigure
 
-from traits.api import HasTraits, Instance, Array, on_trait_change, Range, Button, List, Int
-from traitsui.api import View, UItem, Item, Include, HGroup
-from scipy.stats import poisson
+from traits.api import HasTraits, Instance, Array, on_trait_change
+from traitsui.api import View, UItem, HGroup
 import numpy as np
 
 class WidgetFigureExample(HasTraits):
@@ -21,7 +20,7 @@ class WidgetFigureExample(HasTraits):
             y2 = y1 + p.rectangle.get_height()
             # print("x2, x1 = ", x2, x1)
             # print("y2, y2 = ", y2, y1)
-            zoomdata = self.data[y1:y2,x1:x2]
+            zoomdata = self.data[int(y1):int(y2),int(x1):int(x2)]
 
         self.zoomfig.imshow(zoomdata, extent=[int(x1),int(x2),int(y1),int(y2)])
 

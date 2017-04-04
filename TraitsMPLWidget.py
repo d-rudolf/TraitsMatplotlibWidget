@@ -70,7 +70,6 @@ class _ScrollableMPLFigureEditor(Editor):
 
 
 class _MPLFigureEditor(Editor):
-    scrollable = True
     canvas = Instance(FigureCanvas)
     toolbar = Instance(NavigationToolbar2QT)
 
@@ -215,19 +214,25 @@ class MinimalFigure(HasTraits):
         s = str(s)
         return s.replace('Line2D(', '').replace(')', '')
 
-    def _is_line_in_axes(self, label):
+    def _is_line_in_axes(self, label, ax=None):
         """
         :param label: Label of plot
         :return: False if line is not in axes, line if line is in axes
         """
         lines = []
-        for ax in self.figure.get_axes():
+        if ax is None:
+            for ax in self.figure.get_axes():
+                for l in ax.get_lines():
+                    lines.append(self._replace_line2D_str(l))
+                    if label == self._replace_line2D_str(l):
+                        return l
+
+            self.lines_list = sorted(lines)
+        else:
             for l in ax.get_lines():
-                lines.append(self._replace_line2D_str(l))
                 if label == self._replace_line2D_str(l):
                     return l
 
-        self.lines_list = sorted(lines)
         return False
 
     def _copy_data_btn_fired(self):
@@ -267,8 +272,8 @@ class MinimalFigure(HasTraits):
             print("MinimalFigure: Could not copy text for linux. Install pyperclip")
 
     def get_axes(self):
-        axes = self.create_axis_if_no_axis()
-        return axes
+        self.axes = self.create_axis_if_no_axis()
+        return self.axes
 
     @on_trait_change('figure')
     def create_axis_if_no_axis(self):
@@ -278,7 +283,6 @@ class MinimalFigure(HasTraits):
             self.figure.add_subplot(111)
             axes = self.figure.get_axes()
             self.axes = axes
-
             self._set_axes_property_variables()
         return axes
 
@@ -313,12 +317,8 @@ class MinimalFigure(HasTraits):
     @on_trait_change('axes_selector')
     def _set_axes_property_variables(self):
         self.title = self.axes_selector.get_title()
-        if self.axes_selector.get_xlabel() != '':
-            self.xlabel = self.axes_selector.get_xlabel()
-
-        if self.axes_selector.get_ylabel() != '':
-            self.ylabel = self.axes_selector.get_ylabel()
-
+        self.xlabel = self.axes_selector.get_xlabel()
+        self.ylabel = self.axes_selector.get_ylabel()
         self.axes_selector.grid(self.grid)
 
     def _title_changed(self):
@@ -490,6 +490,8 @@ class BasicFigure(MinimalFigure):
                 line = None
                 for l in self.lines_list:
                     line = self._is_line_in_axes(l)
+                    if line is False:
+                        continue
                     x, y = line.get_data()
                     max = np.nanmax(y)
                     self.normalize_maxes.append(max)
@@ -498,18 +500,27 @@ class BasicFigure(MinimalFigure):
 
                 for l in self.lines_list:
                     line = self._is_line_in_axes(l)
+                    if line is False:
+                        continue
                     x, y = line.get_data()
                     line.set_data(x, y / self.normalize_max)
-
-                # if not self.img_bool:
-                if line is not None:
                     if not line.get_animated():
                         self.draw()
+
+                # not needed
+                # if not self.img_bool:
+                # print("line = ", line)
+                # if line is not None and line is not False:
+                #     if not line.get_animated():
+                #         print("drawing.....")
+                #         self.draw()
             else:
                 line = None
                 if len(self.normalize_maxes) > 0:
                     for i, l in enumerate(self.lines_list):
-                        line = self._is_line_in_axes(l)
+                        line = self._is_line_in_axes(l, self.axes_selector)
+                        if line is False:
+                            continue
                         x, y = line.get_data()
                         max = np.nanmax(y)
                         if old != new:
@@ -517,7 +528,7 @@ class BasicFigure(MinimalFigure):
                         else:
                             line.set_data(x, y)
 
-                    if line is not None:
+                    if line is not None and line is not False:
                         if not line.get_animated():
                             self.draw()
 
@@ -678,7 +689,13 @@ class BasicFigure(MinimalFigure):
 
         if not self._is_line_in_axes(label):
             print("BasicFigure: Plotting ", label)
-            line = axes[ax].plot(x, y, fmt, **kwargs)
+            if type(ax) == int:
+                line = axes[ax].plot(x, y, fmt, **kwargs)
+            elif hasattr(ax, 'plot'):
+                line = ax.plot(x, y, fmt, **kwargs)
+            else:
+                raise TypeError('ax can be an int or the axis itself!')
+
             self.lines_list.append(label)
             self.draw_legend()
 
@@ -797,14 +814,28 @@ class BasicFigure(MinimalFigure):
             UItem('clear_btn'),
             UItem('line_selector', visible_when='not img_bool'),
             UItem('copy_data_btn', visible_when='not img_bool'),
-            HGroup(
-                Item('normalize_bool', label='normalize'),
-                Item('log_bool', label='log scale'),
-                Item('draw_legend_bool', label='draw legend'),
-                Item('cmap_selector', label='cmap', visible_when='img_bool'),
-                UItem('image_slider_btn', visible_when='img_bool'),
-                UItem('save_fig_btn'),
-            ),
+            Item('normalize_bool', label='normalize'),
+            Item('log_bool', label='log scale'),
+            Item('draw_legend_bool', label='draw legend'),
+            Item('cmap_selector', label='cmap', visible_when='img_bool'),
+            UItem('image_slider_btn', visible_when='img_bool'),
+            UItem('save_fig_btn'),
+        )
+        return g
+
+    def options_group_axes_sel(self):
+        g = HGroup(
+            UItem('options_btn'),
+            UItem('clear_btn'),
+            UItem('line_selector', visible_when='not img_bool'),
+            UItem('copy_data_btn', visible_when='not img_bool'),
+            Item('axes_selector'),
+            Item('normalize_bool', label='normalize'),
+            Item('log_bool', label='log scale'),
+            Item('draw_legend_bool', label='draw legend'),
+            Item('cmap_selector', label='cmap', visible_when='img_bool'),
+            UItem('image_slider_btn', visible_when='img_bool'),
+            UItem('save_fig_btn'),
         )
         return g
 
@@ -823,9 +854,19 @@ class BasicFigure(MinimalFigure):
             Include('options_group'),
             handler=MPLInitHandler,
             resizable=True,
-            scrollable=True,
+            # scrollable=True,
         )
         return traits_scroll_view
+
+    def traits_multiple_axes_view(self):
+        traits_scroll_view = View(
+            UItem('figure', editor=MPLFigureEditor(), style='custom'),
+            Include('options_group_axes_sel'),
+            handler=MPLInitHandler,
+            resizable=True,
+        )
+        return traits_scroll_view
+
 
     def image_slider_view(self):
         g = View(
@@ -957,5 +998,7 @@ if __name__ == '__main__':
     # minimal_figure = MinimalFigure(figsize=(6 * 1.618, 6), facecolor='w', tight_layout=True)
     # minimal_figure.configure_traits(view='traits_view')
 
-    basic_figure = BasicFigure(figsize=(6 * 1.618, 6), facecolor='w', tight_layout=True)
+    basic_figure = BasicFigure(figsize=(5 * 1.618, 5), facecolor='w', tight_layout=True)
     basic_figure.configure_traits()
+    # basic_figure.configure_traits(view='traits_multiple_axes_view')
+    # basic_figure.configure_traits(view='traits_scroll_view')
