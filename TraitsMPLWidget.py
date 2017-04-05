@@ -948,12 +948,11 @@ class WidgetFigure(BasicFigure):
         self.canvas.draw()
 
     def get_SelectedPatch(self, patch):
-        k = 0
-        for i, k in enumerate(self.selectionPatches):
-            if i.text == patch:
+        for i, rect in enumerate(self.selectionPatches):
+            if rect.text == patch:
                 break
 
-        return self.selectionPatches[k]
+        return self.selectionPatches[i]
 
 
     def _clearPatchesBtn_fired(self):
