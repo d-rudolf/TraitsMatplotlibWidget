@@ -899,6 +899,8 @@ class BasicFigure(MinimalFigure):
         )
         return traits_options_view
 
+class Testclassgit():
+    print('This is a test')
 
 class WidgetFigure(BasicFigure):
     selector_btn = Button('Selector')
