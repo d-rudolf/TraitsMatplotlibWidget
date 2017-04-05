@@ -12,7 +12,6 @@ import matplotlib as mpl
 mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
@@ -903,6 +902,7 @@ class BasicFigure(MinimalFigure):
 class WidgetFigure(BasicFigure):
     selector_btn = Button('Selector')
     selectionPatches = List()  # contains patches for image stack analysis
+    selectionPatches_names=Float()
     clearPatchesBtn = Button('Clear Patches')
     nColorsFromColormap = Int(5)
 
@@ -947,12 +947,11 @@ class WidgetFigure(BasicFigure):
         self.canvas.draw()
 
     def get_SelectedPatch(self, patch):
-        k = 0
-        for i, k in enumerate(self.selectionPatches):
-            if i.text == patch:
+        for i, rect in enumerate(self.selectionPatches):
+            if rect.text == patch:
                 break
 
-        return self.selectionPatches[k]
+        return self.selectionPatches[i]
 
 
     def _clearPatchesBtn_fired(self):
