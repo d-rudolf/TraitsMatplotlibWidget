@@ -8,11 +8,11 @@ except:
     import pyperclip
     print("Using Linux clipboard")
 
-
+import matplotlib as mpl
 mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
+
 
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
@@ -903,6 +903,7 @@ class BasicFigure(MinimalFigure):
 class WidgetFigure(BasicFigure):
     selector_btn = Button('Selector')
     selectionPatches = List()  # contains patches for image stack analysis
+    selectionPatches_names=Float()
     clearPatchesBtn = Button('Clear Patches')
     nColorsFromColormap = Int(5)
 
