@@ -13,7 +13,6 @@ mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
 from traits.api import Instance, HasTraits, Int, Str, Float, List, Array, Bool, Tuple, Button, Dict, Enum, Range, on_trait_change
