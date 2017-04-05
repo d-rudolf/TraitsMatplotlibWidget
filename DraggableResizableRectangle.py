@@ -218,6 +218,9 @@ class AnnotatedRectangle(HasTraits):
     @on_trait_change('drr.released')
     def released(self):
         print("AnnotatedRectangle: Rectangle released")
+        self.x1, self.y1 = self.drr.rect.get_xy()
+        self.x2 = self.x1+self.drr.rect.get_width()
+        self.y2 = self.y1+self.drr.rect.get_width()
         self.rectReleased += 1
 
     def remove(self):
