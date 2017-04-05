@@ -804,9 +804,9 @@ class BasicFigure(MinimalFigure):
             axes = self.figure.get_axes()
             if ax == None:
                 for ax in axes:
-                    leg = ax.legend(loc=0, shadow=True, fancybox=True)
+                    leg = ax.legend(loc=0, fancybox=True)
             else:
-                axes[ax].legend(loc=0, shadow=True, fancybox=True)
+                axes[ax].legend(loc=0, fancybox=True)
 
     def options_group(self):
         g = HGroup(
