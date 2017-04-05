@@ -11,6 +11,13 @@ ehthumbs.db
 # Folder config file
 Desktop.ini
 
+# Python
+*.pyc
+
+#Pycharm temp
+*.iml
+*.xml
+
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
