@@ -1,6 +1,12 @@
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+# Pycharm temp files
+*.xml
+*.iml
+
+#Python compiled Files
+*.pcy
 
 # Folder config file
 Desktop.ini

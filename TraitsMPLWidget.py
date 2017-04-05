@@ -8,7 +8,7 @@ except:
     import pyperclip
     print("Using Linux clipboard")
 
-import matplotlib as mpl
+
 mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib.pyplot as plt
