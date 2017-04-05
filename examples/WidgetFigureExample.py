@@ -20,6 +20,15 @@ class WidgetFigureExample(HasTraits):
             y2 = y1 + p.rectangle.get_height()
             # print("x2, x1 = ", x2, x1)
             # print("y2, y2 = ", y2, y1)
+
+            if p.rectangle.get_width() < 0:
+                x2, x1 = x1, x2
+            if p.rectangle.get_height() < 0:
+                y2, y1 = y1, y2
+            if p.rectangle.get_width()==0 or p.rectangle.get_height()==0:
+                print('Zero Patch dimension')
+                break
+
             zoomdata = self.data[int(y1):int(y2),int(x1):int(x2)]
 
         self.zoomfig.imshow(zoomdata, extent=[int(x1),int(x2),int(y1),int(y2)])
