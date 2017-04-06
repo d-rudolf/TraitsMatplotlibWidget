@@ -29,14 +29,14 @@ class WidgetFigureExample(HasTraits):
                 print('Zero Patch dimension')
                 break
 
-            if x1<0:
-                x1=0
-            if x2>np.shape(self.data)[0]:
-                x2=np.shape(self.data)[0]
-            if y1<0:
-                y1=0
-            if y2>np.shape(self.data)[1]:
-                y2=np.shape(self.data)[1]
+            if x1 < 0:
+                x1 = 0
+            if x2 > np.shape(self.data)[0]:
+                x2 = np.shape(self.data)[0]
+            if y1 < 0:
+                y1 = 0
+            if y2 > np.shape(self.data)[1]:
+                y2 = np.shape(self.data)[1]
 
             zoomdata = self.data[int(y1):int(y2),int(x1):int(x2)]
 
