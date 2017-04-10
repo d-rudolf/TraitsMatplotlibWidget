@@ -781,7 +781,6 @@ class BasicFigure(MinimalFigure):
             barlinecols[1].set_segments(zip(zip(x, y - yerr), zip(x, y + yerr)))
 
 
-    # @usf.timeit
     def plot(self, x, y, ax=0, **kwargs):
         """ Additional (to normal matplotlib plot method) kwargs:
                 - (bool) nodraw     If True, will not draw canvas
@@ -830,7 +829,6 @@ class BasicFigure(MinimalFigure):
         else:
             return line
 
-    # @usf.timeit
     def blit(self, x, y, ax=0, **kwargs):
         kwargs['animated'] = True
 
