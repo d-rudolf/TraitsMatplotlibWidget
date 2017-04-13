@@ -22,6 +22,20 @@ class BasicFigureExample(BasicFigure):
             self.plot(x, y2 / 5., fmt='o', label='cos 2')
             self.plot(x, y2 / 8., fmt='o', label='cos 3')
 
+    terrorbar = Range(0, 100, 1)
+    def _terrorbar_changed(self):
+        import numpy as np
+        x = np.linspace(0., 2 * np.pi, np.random.randint(5, 500))
+        y = np.sin(x * self.terrorbar)
+        y2 = np.cos(x * self.terrorbar)
+        # self.grid = True
+        self.errorbar(x, y / 10, xerr=x*np.random.random(x.shape)/30., yerr=y * np.random.random(x.shape)/20.,
+                      fmt='o-', linestyle='dashed', label='sin', ecolor='k', capsize=3)
+        if np.random.uniform() < 0.5:
+            self.errorbar(x, y2 / 10, xerr=x*np.random.random(x.shape)/30., yerr=y * np.random.random(x.shape)/10., fmt='o', label='cos 1')
+            self.errorbar(x, y2 / 5., xerr=x*np.random.random(x.shape)/20., yerr=y * np.random.random(x.shape)/15., fmt='o', label='cos 2')
+            self.errorbar(x, y2 / 8., xerr=x*np.random.random(x.shape)/10., yerr=y * np.random.random(x.shape)/9., fmt='o', label='cos 3')
+
     tblit = Range(0,100,1)
     def _tblit_changed(self):
         import numpy as np
@@ -49,6 +63,7 @@ class BasicFigureExample(BasicFigure):
             UItem('figure', editor=MPLFigureEditor(), style='custom'),
             Include('options_group'),
             Item('t'),
+            Item('terrorbar'),
             Item('tblit'),
             Item('timg'),
             handler=MPLInitHandler,
