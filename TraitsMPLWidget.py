@@ -664,7 +664,15 @@ class BasicFigure(MinimalFigure):
             self.draw()
 
 
-    def axvline(self,x, ax=0, **kwargs):
+    def axvline(self,pos, ax=0, **kwargs):
+        self.ax_line(pos,'axvline',ax=ax,**kwargs)
+
+
+    def axhline(self,pos, ax=0, **kwargs):
+        self.ax_line(pos,'axhline',ax=ax,**kwargs)
+
+
+    def ax_line(self,pos,func_str, ax=0, **kwargs):
         # self.img_bool = False
         fmt, label = self._test_plot_kwargs(kwargs)
 
@@ -680,24 +688,23 @@ class BasicFigure(MinimalFigure):
         if not line:
             print("BasicFigure: Plotting axhline ", label)
             if type(ax) == int:
-                line = axes[ax].axvline(x, **kwargs)
-            elif hasattr(ax, 'axvline'):
-                line = ax.axvline(x, **kwargs)
+                line = getattr(axes[ax],func_str)(pos, **kwargs)
+            elif hasattr(ax, func_str):
+                line = getattr(ax, func_str)(pos, **kwargs)
             else:
                 raise TypeError('ax can be an int or the axis itself!')
             self.lines_list.append(label)
         else:
             line.remove()
             if type(ax) == int:
-                line = axes[ax].axvline(x, **kwargs)
-            elif hasattr(ax, 'axvline'):
-                line = ax.axvline(x, **kwargs)
+                line = getattr(axes[ax], func_str)(pos, **kwargs)
+            elif hasattr(ax, func_str):
+                line = getattr(ax, func_str)(pos, **kwargs)
             else:
                 raise TypeError('ax can be an int or the axis itself!')
 
         self.lines_list.append(label)
         self.draw_legend()
-
 
         if not nodraw:
             self._normalize_bool_changed()
@@ -708,49 +715,6 @@ class BasicFigure(MinimalFigure):
         else:
             return line
 
-    def axhline(self,y, ax=0, **kwargs):
-        # self.img_bool = False
-        fmt, label = self._test_plot_kwargs(kwargs)
-
-        axes = self.figure.get_axes()
-        line = self._is_line_in_axes(label)
-
-        nodraw = False
-
-        if 'nodraw' in kwargs:
-            if kwargs.pop('nodraw'):
-                nodraw = True
-
-        if not line:
-            print("BasicFigure: Plotting axhline ", label)
-            if type(ax) == int:
-                line = axes[ax].axhline(y, **kwargs)
-            elif hasattr(ax, 'axhline'):
-                line = ax.axhline(y, **kwargs)
-            else:
-                raise TypeError('ax can be an int or the axis itself!')
-            self.lines_list.append(label)
-        else:
-            line.remove()
-            if type(ax) == int:
-                line = axes[ax].axhline(y, **kwargs)
-            elif hasattr(ax, 'axhline'):
-                line = ax.axhline(y, **kwargs)
-            else:
-                raise TypeError('ax can be an int or the axis itself!')
-
-        self.lines_list.append(label)
-        self.draw_legend()
-
-
-        if not nodraw:
-            self._normalize_bool_changed()
-            self.draw()  # draws with respect to autolim etc.
-
-        if hasattr(line, "append"):
-            return line[0]
-        else:
-            return line
 
     def _is_errorbar_plotted(self, label):
         if label in self.errorbar_data:
