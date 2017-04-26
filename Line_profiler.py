@@ -3,7 +3,6 @@ from TraitsMPLWidget import BasicFigure
 from ThreadedHasTraits import tHasTraits as ThreadedHasTraits
 from traits.api import List, Enum, Directory, Instance, Array, Str, Bool, Float, on_trait_change
 from traitsui.api import View, HGroup, VGroup, Item, UItem
-
 from MathTools import Math_Util
 
 import numpy as np
