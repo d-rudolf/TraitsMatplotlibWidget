@@ -7,6 +7,7 @@
 from PIL import Image
 import numpy as np
 
+
 def read_tif_image(fname):
     """read image with filename as np array"""
     img = Image.open(fname)
