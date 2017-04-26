@@ -28,7 +28,6 @@ class Math_Util():
         #return np.concatenate((yy,xx), axis = 1)
         return x,y
 
-
     def interpolate(self, im, x,y):
         """
         :param im: image
