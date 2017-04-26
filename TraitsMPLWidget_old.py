@@ -1,4 +1,8 @@
 from __future__ import division, print_function
+
+from traits.etsconfig.api import ETSConfig
+# ETSConfig.toolkit = 'qt4'
+
 from pyface.qt import QtGui, QtCore
 
 try:
@@ -9,26 +13,28 @@ except:
     print("Using Linux clipboard")
 
 import matplotlib as mpl
-mpl.use('Qt4Agg')
-import numpy as np
 import matplotlib.pyplot as plt
-#import useful as usf
+# mpl.use('Qt4Agg')
+# mpl.rcParams['backend.qt4'] = 'PyQt4v2'
+
+
+import numpy as np
+
 
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
 from traits.api import Instance, HasTraits, Int, Str, Float, List, Array, Bool, Tuple, Button, Dict, Enum, Range, on_trait_change
 from traitsui.api import Handler, View, Item, UItem, CheckListEditor, HGroup, VGroup, Include
 from pyface.api import FileDialog, OK
+from collections import OrderedDict
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
-from matplotlib.widgets import RectangleSelector, SpanSelector
-from DraggableResizableRectangle import DraggableResizeableRectangle, AnnotatedRectangle
+from matplotlib.container import ErrorbarContainer
 
 import cPickle, wx
-
 
 __author__ = 'd.wilson'
 
@@ -50,7 +56,7 @@ class _ScrollableMPLFigureEditor(Editor):
         pass
 
     def _create_canvas(self, parent):
-        print(self.__class__.__name__, ": Creating canvas (_create_canvas)")
+        print("_MPLFigureEditor: Creating canvas (_create_canvas)")
         frame_canvas = QtGui.QWidget()
 
         scrollarea = QtGui.QScrollArea()
@@ -58,8 +64,9 @@ class _ScrollableMPLFigureEditor(Editor):
         mpl_canvas.setParent(scrollarea)
         scrollarea.setWidget(mpl_canvas)
 
+
         mpl_toolbar = NavigationToolbar2QT(mpl_canvas, frame_canvas)
-        # mpl_toolbar.setIconSize(QtCore.QSize(30, 30))  # activate for smaller icon sizes
+        # mpl_toolbar.setIconSize(QtCore.QSize(30, 30))
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(scrollarea)
@@ -68,8 +75,8 @@ class _ScrollableMPLFigureEditor(Editor):
         frame_canvas.setLayout(vbox)
         return frame_canvas
 
-
 class _MPLFigureEditor(Editor):
+    scrollable = True
     canvas = Instance(FigureCanvas)
     toolbar = Instance(NavigationToolbar2QT)
 
@@ -81,14 +88,14 @@ class _MPLFigureEditor(Editor):
         pass
 
     def _create_canvas(self, parent):
-        print(self.__class__.__name__, ": Creating canvas (_create_canvas)")
+        print("_MPLFigureEditor: Creating canvas (_create_canvas)")
         # matplotlib commands to create a canvas
         frame = QtGui.QWidget()
         mpl_canvas = FigureCanvas(self.value)
         mpl_canvas.setParent(frame)
         mpl_toolbar = NavigationToolbar2QT(mpl_canvas, frame)
 
-        # mpl_toolbar.setIconSize(QtCore.QSize(30, 30))  # activate for smaller icon sizes
+        # mpl_toolbar.setIconSize(QtCore.QSize(30, 30))
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(mpl_canvas)
@@ -97,14 +104,11 @@ class _MPLFigureEditor(Editor):
 
         return frame
 
-
 class MPLFigureEditor(BasicEditorFactory):
     klass = _MPLFigureEditor
 
-
 class ScrollableMPLFigureEditor(BasicEditorFactory):
     klass = _ScrollableMPLFigureEditor
-
 
 class MPLInitHandler(Handler):
     """Handler calls mpl_setup() to initialize mpl events"""
@@ -124,7 +128,7 @@ class MinimalFigure(HasTraits):
     canvas = Instance(FigureCanvas)
     clickdata = Tuple()
 
-    # some options - more to be added!
+    # some option - more to be added!
     axes = List()
     axes_selector = Enum(values='axes')
     options_btn = Button('options')
@@ -147,47 +151,28 @@ class MinimalFigure(HasTraits):
         self.figure_kwargs = kwargs
 
     def _figure_default(self):
-        print(self.__class__.__name__, ": Create figure (_figure_default)")
-        fig = plt.figure(**self.figure_kwargs)
+        print("MinimalFigure: Create figure (_figure_default)")
+        fig = Figure(**self.figure_kwargs)
         fig.patch.set_facecolor('w')
         return fig
 
-    def update_axes(self):
-        print(self.__class__.__name__, ": Updating axes...")
-        self.axes = self.figure.get_axes()
-
-    def add_figure(self, fig):
-        print(self.__class__.__name__, ": Adding figure")
-        self.figure = fig
-        self.canvas = fig.canvas
-        self.add_trait('figure', fig)
-        self.add_trait_listener(fig)
-        self.mpl_setup()
-        self.update_axes()
-
-    @on_trait_change('figure,axes[]')  # ,
+    @on_trait_change('figure, axes[]')
     def update_lines(self):
-        print(self.__class__.__name__, ": figure changed! ")
-        self.update_axes()  # get axes
+        print("MinimalFigure: axes changed! ")
+        self.axes = self.figure.get_axes()  # get axes
 
         # get lines
         lines = []
         for ax in self.figure.get_axes():
             for l in ax.get_lines():
-                tmplinename = self._replace_line2D_str(l)
-                if '_nolegend_' in tmplinename:
-                    continue
-
-                lines.append(tmplinename)
+                lines.append(self._replace_line2D_str(l))
 
         self.lines_list = sorted(lines)
 
         self._set_axes_property_variables()  # get labels
-        if self.canvas:
-            self.canvas.draw()
 
     def mpl_setup(self):
-        print(self.__class__.__name__, ": Running mpl_setup - connecting button press events")
+        print("MinimalFigure: Running mpl_setup - connecting button press events")
         self.canvas = self.figure.canvas  # creates link (same object)
         cid = self.figure.canvas.mpl_connect('button_press_event', self.__onclick)
 
@@ -195,57 +180,51 @@ class MinimalFigure(HasTraits):
         if event is None:
             return None
         self.clickdata = (event.button, event.x, event.y, event.xdata, event.ydata)
-        print(self.__class__.__name__, ": %s" % event)
+        print('MinimalFigure: %s' % event)
 
     def clear(self):
         self._clear_btn_fired()
 
     def _clear_btn_fired(self):
-        ax = self.figure.get_axes()
-        for a in ax:
-            print(self.__class__.__name__, ": Clearing axis ", a)
-            a.clear()
+        if self.img_bool:
+            self.img_bool = False
+            # self.figure.clear()
+            # self.create_axis_if_no_axis()
+        else:
+            ax = self.figure.get_axes()
+            for a in ax:
+                print("MinimalFigure: Clearing axis ", a)
+                a.clear()
 
-        self.xlabel = ''
-        self.ylabel = ''
-        self.title = ''
-        for ax in self.figure.axes:
-            ax.grid(self.grid)
-
+            self.xlabel = ''
+            self.ylabel = ''
+            self.title = ''
+            for ax in self.figure.axes:
+                ax.grid(self.grid)
         self.draw_canvas()
 
     def _replace_line2D_str(self, s):
         s = str(s)
         return s.replace('Line2D(', '').replace(')', '')
 
-    def _is_line_in_axes(self, label, ax=None):
+    def _is_line_in_axes(self, label):
         """
         :param label: Label of plot
         :return: False if line is not in axes, line if line is in axes
         """
-        lines = []  # use update_lines()
-        if ax is None:
-            for ax in self.figure.get_axes():
-                for l in ax.get_lines():
-                    tmplinename = self._replace_line2D_str(l)
-                    if '_nolegend_' in tmplinename:
-                        continue
-
-                    lines.append(self._replace_line2D_str(l))
-                    if label == self._replace_line2D_str(l):
-                        return l
-
-            # self.lines_list = sorted(lines)
-        else:
+        lines = []
+        for ax in self.figure.get_axes():
             for l in ax.get_lines():
+                lines.append(self._replace_line2D_str(l))
                 if label == self._replace_line2D_str(l):
                     return l
 
+        self.lines_list = sorted(lines)
         return False
 
     def _copy_data_btn_fired(self):
-        # due to https://github.com/matplotlib/matplotlib/issues/8458, only support for xy-error in Basicfigure()
-        print(self.__class__.__name__, ": Trying to copy data to clipboard")
+        # TODO: Add xerr and yerr to copy
+        print("MinimalFigure: Trying to copy data to clipboard")
         line = self._is_line_in_axes(self.line_selector)
         x = line.get_xdata()
         y = line.get_ydata()
@@ -255,6 +234,15 @@ class MinimalFigure(HasTraits):
             text += str(x[i]) + "\t" + str(y[i]) + "\n"
 
         self.add_to_clip_board(text)
+
+        # x = self._plotlines[self.plotlines_sel].get_xdata()
+        # y = self._plotlines[self.plotlines_sel].get_ydata()
+        #
+        # text = 'x \t y \t x_error \t y_error \n'
+        # for i in xrange(len(x)):
+        #     text += str(x[i]) + "\t" + str(y[i]) + "\t" + str(self._xerr[self.plotlines_sel][i]) + "\t" + str(self._yerr[self.plotlines_sel][i]) + "\n"
+        #
+        # self.add_to_clip_board(text)
 
     def add_to_clip_board(self, text):
         try:
@@ -271,10 +259,9 @@ class MinimalFigure(HasTraits):
             print("MinimalFigure: Could not copy text for linux. Install pyperclip")
 
     def get_axes(self):
-        self.axes = self.create_axis_if_no_axis()
-        return self.axes
+        axes = self.create_axis_if_no_axis()
+        return axes
 
-    @on_trait_change('figure')
     def create_axis_if_no_axis(self):
         # creates one axis if none created
         axes = self.figure.get_axes()
@@ -282,10 +269,10 @@ class MinimalFigure(HasTraits):
             self.figure.add_subplot(111)
             axes = self.figure.get_axes()
             self.axes = axes
+
             self._set_axes_property_variables()
         return axes
 
-    @on_trait_change('figure')
     def draw(self):
         if self.autoscale:
             axes = self.figure.get_axes()
@@ -316,8 +303,12 @@ class MinimalFigure(HasTraits):
     @on_trait_change('axes_selector')
     def _set_axes_property_variables(self):
         self.title = self.axes_selector.get_title()
-        self.xlabel = self.axes_selector.get_xlabel()
-        self.ylabel = self.axes_selector.get_ylabel()
+        if self.axes_selector.get_xlabel() != '':
+            self.xlabel = self.axes_selector.get_xlabel()
+
+        if self.axes_selector.get_ylabel() != '':
+            self.ylabel = self.axes_selector.get_ylabel()
+
         self.axes_selector.grid(self.grid)
 
     def _title_changed(self):
@@ -405,7 +396,6 @@ class BasicFigure(MinimalFigure):
     normalize_maxes = List()
 
     log_bool = Bool(False)
-    draw_legend_bool = Bool(True)
 
     # image stuff
     origin = Str('lower')
@@ -423,10 +413,6 @@ class BasicFigure(MinimalFigure):
 
     image_slider_btn = Button('z-slider')
 
-    errorbar_data = Dict()  # this has is needed because of https://github.com/matplotlib/matplotlib/issues/8458
-    _xerr = Dict()
-    _yerr = Dict()
-
     x_first = Float()
     x_second = Float()
 
@@ -436,6 +422,7 @@ class BasicFigure(MinimalFigure):
     def __init__(self, **kwargs):
         super(BasicFigure, self).__init__(**kwargs)
         self.grid = True
+        # self.add_trait('x_second', Float)
 
     def _test_plot_kwargs(self, kwargs):
         if 'fmt' in kwargs:
@@ -491,9 +478,11 @@ class BasicFigure(MinimalFigure):
     def _normalize_bool_changed(self, old=None, new=None):
         # Function is a little bit long since it handles normalization completly by itself
         # Maybe there is a better way, but it's working and i do not have time to think about a better one
+        # Not completly working in my real programmes, since activating normalizing leads the widget to plot only one line ...
+        # Normalizing having everything already plotted (so clicking the button), works nicely.
 
-        if old != new and self.img_bool is False:
-            self.set_animation_for_lines(False)
+        if old != new and self.img_bool == False:
+            self.setAnimationForLines(False)
 
         self.normalize_max = 0.
 
@@ -511,8 +500,6 @@ class BasicFigure(MinimalFigure):
                 line = None
                 for l in self.lines_list:
                     line = self._is_line_in_axes(l)
-                    if line is False:
-                        continue
                     x, y = line.get_data()
                     max = np.nanmax(y)
                     self.normalize_maxes.append(max)
@@ -521,19 +508,18 @@ class BasicFigure(MinimalFigure):
 
                 for l in self.lines_list:
                     line = self._is_line_in_axes(l)
-                    if line is False:
-                        continue
                     x, y = line.get_data()
                     line.set_data(x, y / self.normalize_max)
+
+                # if not self.img_bool:
+                if line is not None:
                     if not line.get_animated():
                         self.draw()
             else:
                 line = None
                 if len(self.normalize_maxes) > 0:
                     for i, l in enumerate(self.lines_list):
-                        line = self._is_line_in_axes(l, self.axes_selector)
-                        if line is False:
-                            continue
+                        line = self._is_line_in_axes(l)
                         x, y = line.get_data()
                         max = np.nanmax(y)
                         if old != new:
@@ -541,7 +527,7 @@ class BasicFigure(MinimalFigure):
                         else:
                             line.set_data(x, y)
 
-                    if line is not None and line is not False:
+                    if line is not None:
                         if not line.get_animated():
                             self.draw()
 
@@ -570,7 +556,7 @@ class BasicFigure(MinimalFigure):
                 self.img_kwargs.pop('norm')
             self.imshow(self.img_data, **self.img_kwargs)
         else:
-            self.set_animation_for_lines(False)  # has to be done, otherwise no datapoints
+            self.setAnimationForLines(False)  # has to be done, otherwise no datapoints
             if self.log_bool:  # TODO: Maybe add xscale log, but not needed now.
                 # self.axes_selector.set_xscale("log", nonposx='clip')
                 self.axes_selector.set_yscale("log", nonposy='clip')
@@ -581,24 +567,6 @@ class BasicFigure(MinimalFigure):
     def _image_slider_btn_fired(self):
         self.autoscale = False
         self.edit_traits(view='image_slider_view')
-
-    def _clear_btn_fired(self):
-        if self.img_bool:
-            self.img_bool = False  # also triggers
-        else:
-            ax = self.figure.get_axes()
-            for a in ax:
-                print("MinimalFigure: Clearing axis ", a)
-                a.clear()
-
-            self.xlabel = ''
-            self.ylabel = ''
-            self.title = ''
-            for ax in self.figure.axes:
-                ax.grid(self.grid)
-
-        self.errorbar_data = {}
-        self.draw_canvas()
 
     def imshow(self, z, ax=0, **kwargs):
         if self.normalize_bool:
@@ -628,7 +596,7 @@ class BasicFigure(MinimalFigure):
         if not self.img_bool:
             self.img_bool = True
             self.img = self.axes_selector.imshow(self.img_data, aspect=aspect, **kwargs)
-
+            # print("type(self.img) = ", type(self.img))
             if not hasattr(self, "label"):
                 self.label = ''
 
@@ -639,17 +607,23 @@ class BasicFigure(MinimalFigure):
             if 'extent' in kwargs.keys():
                 self.img.set_extent(kwargs['extent'])
 
+            # print("update: type(self.img) = ", type(self.img))
+
+
         assert type(self.img) == mpl.image.AxesImage
         self._set_cb_slider()
         self.img_kwargs = kwargs
 
+
     def update_imshow(self, z, ax=0):
         z = np.array(z)
+        # print("BasicFigure: Updating imshow: z.shape = ", z.shape)
         self.img.set_data(z)
         if self.autoscale:
             self.img.autoscale()
 
         self.draw()
+
 
     @on_trait_change('autoscale')
     def _set_cb_slider(self):
@@ -674,196 +648,24 @@ class BasicFigure(MinimalFigure):
 
     def _vmax_changed(self):
         vmin = self.vmin
-        if self.log_bool and self.vmin < 0.:
-            vmin = 0.
+        if self.log_bool:
+            if self.vmin < 0.:
+                vmin = 0.
 
         if not self.autoscale:
             self.img.set_clim(vmin=vmin,vmax=self.vmax)
             self.draw()
 
 
-    def axvline(self,pos, ax=0, **kwargs):
-        self.ax_line(pos,'axvline',ax=ax,**kwargs)
-
-
-    def axhline(self,pos, ax=0, **kwargs):
-        self.ax_line(pos,'axhline',ax=ax,**kwargs)
-
-
-    def ax_line(self,pos,func_str, ax=0, **kwargs):
-        # self.img_bool = False
-        fmt, label = self._test_plot_kwargs(kwargs)
-
-        axes = self.figure.get_axes()
-        line = self._is_line_in_axes(label)
-
-        nodraw = False
-
-        if 'nodraw' in kwargs:
-            if kwargs.pop('nodraw'):
-                nodraw = True
-
-        if not line:
-            print("BasicFigure: Plotting axhline ", label)
-            if type(ax) == int:
-                line = getattr(axes[ax],func_str)(pos, **kwargs)
-            elif hasattr(ax, func_str):
-                line = getattr(ax, func_str)(pos, **kwargs)
-            else:
-                raise TypeError('ax can be an int or the axis itself!')
-            self.lines_list.append(label)
-        else:
-            line.remove()
-            if type(ax) == int:
-                line = getattr(axes[ax], func_str)(pos, **kwargs)
-            elif hasattr(ax, func_str):
-                line = getattr(ax, func_str)(pos, **kwargs)
-            else:
-                raise TypeError('ax can be an int or the axis itself!')
-
-        self.lines_list.append(label)
-        self.draw_legend()
-
-        if not nodraw:
-            self._normalize_bool_changed()
-            self.draw()  # draws with respect to autolim etc.
-
-        if hasattr(line, "append"):
-            return line[0]
-        else:
-            return line
-
-
-    def _is_errorbar_plotted(self, label):
-        if label in self.errorbar_data:
-            return self.errorbar_data[label]
-        else:
-            return False
-
-    def errorbar(self, x, y, ax=0, **kwargs):
-        """ Additional (to normal matplotlib plot method) kwargs:
-                - (bool) nodraw     If True, will not draw canvas
-                - (str) fmt         like in matplotlib errorbar(), but it is stupid to use it only in one function
-        """
-        self.img_bool = False
-        fmt, label = self._test_plot_kwargs(kwargs)
-        axes = self.get_axes()
-        line = self._is_errorbar_plotted(label)
-
-        if len(x) == 0:
-            print(self.__class__.__name__, "Length of x array is 0.")
-            return
-
-        if not 'xerr' in kwargs:
-            kwargs['xerr'] = np.zeros(x.shape)
-
-        if not 'yerr' in kwargs:
-            kwargs['yerr'] = np.zeros(y.shape)
-
-        self._xerr[label] = kwargs['xerr']
-        self._yerr[label] = kwargs['yerr']
-
-        if len(x) > self.mask_length:
-            x = self._mask_data(x)
-            y = self._mask_data(y)
-            kwargs['xerr'] = self._mask_data(kwargs.pop('xerr'))
-            kwargs['yerr'] = self._mask_data(kwargs.pop('yerr'))
-
-
-
-        nodraw = False
-        if 'nodraw' in kwargs:
-            if kwargs.pop('nodraw'):
-                nodraw = True
-
-        if type(line) is bool:
-            print("BasicFigure: Plotting ", label)
-            if type(ax) == int:
-                self.errorbar_data[label] = axes[ax].errorbar(x, y, fmt=fmt, **kwargs)
-            elif hasattr(ax, 'plot'):
-                self.errorbar_data[label] = ax.plot(x, y, fmt=fmt, **kwargs)
-            else:
-                raise TypeError('ax can be an int or the axis itself!')
-
-            self.lines_list.append(label)
-            self.draw_legend()
-        else:
-            if line[0].get_animated():
-                self.set_animation_for_lines(False)  # doesn't work otherwise, dunno why.
-            self._set_errorbar_data(x, y, **kwargs)
-
-        if not nodraw:
-            self._normalize_bool_changed()
-            self.draw()  # draws with respect to autolim etc.
-
-        if hasattr(line, "append"):
-            return line[0]
-        else:
-            return line
-
-    def _copy_data_btn_fired(self):
-        print(self.__class__.__name__, ": Trying to copy data to clipboard")
-        if self.line_selector in self.errorbar_data:
-            line, caplines, barlinecols = self.errorbar_data[self.line_selector]
-            x = line.get_xdata()
-            y = line.get_ydata()
-
-            xerr = self._xerr[self.line_selector]
-            yerr = self._yerr[self.line_selector]
-            print("xerr = ", xerr)
-
-            text = 'x \t y \t x_error \t y_error \n'
-            for i in xrange(len(x)):
-                text += str(x[i]) + "\t" + str(y[i]) + "\t" + str(xerr[i]) + "\t" + str(
-                    yerr[i]) + "\n"
-        else:
-            line = self._is_line_in_axes(self.line_selector)
-            x = line.get_xdata()
-            y = line.get_ydata()
-
-            text = 'x \t y \n'
-            for i in xrange(len(x)):
-                text += str(x[i]) + "\t" + str(y[i]) + "\n"
-
-        self.add_to_clip_board(text)
-
-    def _set_errorbar_data(self, *args, **kwargs):
-        x, y = args
-        label = kwargs['label']
-        x = np.array(x)
-        y = np.array(y)
-        line, caplines, barlinecols = self.errorbar_data[label]
-
-        line.set_data(x, y)
-        xerr = kwargs['xerr']
-        yerr = kwargs['yerr']
-
-        if not (xerr is None and yerr is None):
-            error_positions = (x - xerr, y), (x + xerr, y), (x, y - yerr), (x, y + yerr)
-
-            # Update the caplines
-            if len(caplines) > 0:
-                for i, pos in enumerate(error_positions):
-                    caplines[i].set_data(pos)
-
-            # Update the error bars
-            barlinecols[0].set_segments(zip(zip(x - xerr, y), zip(x + xerr, y)))
-            barlinecols[1].set_segments(zip(zip(x, y - yerr), zip(x, y + yerr)))
-
-
     def plot(self, x, y, ax=0, **kwargs):
-        """ Additional (to normal matplotlib plot method) kwargs:
-                - (bool) nodraw     If True, will not draw canvas
-                - (str) fmt         like in matplotlib errorbar(), but it is stupid to use it only in one function
-        """
         self.img_bool = False
         fmt, label, text, pos = self._test_plot_kwargs(kwargs)
+        print ('Text: {}'.format(text))
+        print ('Pos: {}'.format(pos))
         axes = self.get_axes()
         line = self._is_line_in_axes(label)
 
-        if len(x) == 0:
-            print(self.__class__.__name__, "Length of x array is 0.")
-            return
+        assert len(x) > 0, "BasicFigure: Length of x array is 0"
 
         if len(x) > self.mask_length:
             x = self._mask_data(x)
@@ -874,22 +676,21 @@ class BasicFigure(MinimalFigure):
             if kwargs.pop('nodraw'):
                 nodraw = True
 
-        if type(line) is bool:
-            print(self.__class__.__name__, ": Plotting ", label)
-            if type(ax) == int:
-                line = axes[ax].plot(x, y, fmt, **kwargs)
-                self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize=12)
-            elif hasattr(ax, 'plot'):
-                line = ax.plot(x, y, fmt, **kwargs)
-                self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize=12)
-            else:
-                raise TypeError('ax can be an int or the axis itself!')
-
+        if not self._is_line_in_axes(label):
+            print("BasicFigure: Plotting ", label)
+            line = axes[ax].plot(x, y, fmt, **kwargs)
+            self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize = 12)
             self.lines_list.append(label)
             self.draw_legend()
+
+            if self.log_bool:  # TODO: Maybe add xscale log, but not needed now.
+                self.axes_selector.set_yscale("log", nonposy='clip')
+            else:
+                self.axes_selector.set_yscale("linear")
+
         else:
             if line.get_animated():
-                self.set_animation_for_lines(False)  # doesn't work otherwise, dunno why.
+                self.setAnimationForLines(False)  # doesn't work otherwise, dunno why.
             line.set_data(x,y)
             self.txt.set_text(text)
 
@@ -901,6 +702,7 @@ class BasicFigure(MinimalFigure):
             return line[0]
         else:
             return line
+
 
     def blit(self, x, y, ax=0, **kwargs):
         kwargs['animated'] = True
@@ -922,22 +724,22 @@ class BasicFigure(MinimalFigure):
                 nodraw = True
 
         if not self._is_line_in_axes(label):
-            print(self.__class__.__name__, ": Plotting blitted ", label)
+            print("BasicFigure: Plotting blitted ", label)
             axes[ax].plot(x, y, fmt, **kwargs)
             self.lines_list.append(label)
             self.draw_legend()
             self.figure.canvas.draw()
             self.background = self.canvas.copy_from_bbox(self.axes_selector.bbox)
-            self.refresh_lines(ax)
+            self.refreshLines(ax)
         else:
             l = self._is_line_in_axes(label)
             if not l.get_animated():
-                self.set_animation_for_lines(True)
+                self.setAnimationForLines(True)
                 self.blit(x, y, ax=0, **kwargs)
 
             self.canvas.restore_region(self.background)
             self._setlinedata(x, y , ax, **kwargs)
-            self.refresh_lines(ax)
+            self.refreshLines(ax)
             self.canvas.blit(self.axes_selector.bbox)
 
         self._normalize_bool_changed()
@@ -949,17 +751,21 @@ class BasicFigure(MinimalFigure):
         l.set_data(x,y)
 
     def mpl_setup(self):
-        print(self.__class__.__name__, ": Running mpl_setup - connecting button press events")
+        print("MinimalFigure: Running mpl_setup - connecting button press events")
         self.canvas = self.figure.canvas  # creates link (same object)
         self.figure.canvas.mpl_connect('button_press_event', self.__onclick_and_draw)
+
 
     def __onclick(self, event):
         if event is None:
             return None
         self.clickdata = (event.button, event.x, event.y, event.xdata, event.ydata)
         if not self.img_bool:
-            self.set_animation_for_lines(False)
-        print(self.__class__.__name__, ": %s" % event)
+            self.setAnimationForLines(False)
+        print('BasicFigure: xdata: {}, ydata: {}'.format(event.xdata, event.ydata))
+        self.xdata = event.xdata
+        self.ydata = event.xdata
+        return (self.xdata, self.ydata)
 
     def __onclick_and_draw(self, event):
         print("__onclick_and_draw")
@@ -1001,11 +807,14 @@ class BasicFigure(MinimalFigure):
                 l.set_animated(TF)
 
             ax.relim()
+            # if self.autoscale:  # has to be off, otherwise no zoom
+            #     ax.autoscale()
 
+        # self.canvas.update()
         self.canvas.draw()
         self.background = self.canvas.copy_from_bbox(self.axes_selector.bbox)
 
-    def refresh_lines(self, ax):
+    def refreshLines(self, ax):
         axes = self.get_axes()
         for line in axes[ax].get_lines():
             axes[ax].draw_artist(line)
@@ -1013,15 +822,13 @@ class BasicFigure(MinimalFigure):
         self.canvas.update()
 
     def draw_legend(self, ax=None):
-        if self.draw_legend_bool:
-
-            print(self.__class__.__name__, ": Drawing Legend")
-            axes = self.figure.get_axes()
-            if ax == None:
-                for ax in axes:
-                    leg = ax.legend(loc=0, fancybox=True)
-            else:
-                axes[ax].legend(loc=0, fancybox=True)
+        print("BasicFigure: Drawing Legend")
+        axes = self.figure.get_axes()
+        if ax == None:
+            for ax in axes:
+                leg = ax.legend(loc=0, shadow=True, fancybox=True)
+        else:
+            axes[ax].legend(loc=0, shadow=True, fancybox=True)
 
     def options_group(self):
         g = HGroup(
@@ -1029,28 +836,13 @@ class BasicFigure(MinimalFigure):
             UItem('clear_btn'),
             UItem('line_selector', visible_when='not img_bool'),
             UItem('copy_data_btn', visible_when='not img_bool'),
-            Item('normalize_bool', label='normalize'),
-            Item('log_bool', label='log scale'),
-            Item('draw_legend_bool', label='draw legend'),
-            Item('cmap_selector', label='cmap', visible_when='img_bool'),
-            UItem('image_slider_btn', visible_when='img_bool'),
-            UItem('save_fig_btn'),
-        )
-        return g
-
-    def options_group_axes_sel(self):
-        g = HGroup(
-            UItem('options_btn'),
-            UItem('clear_btn'),
-            UItem('line_selector', visible_when='not img_bool'),
-            UItem('copy_data_btn', visible_when='not img_bool'),
-            Item('axes_selector'),
-            Item('normalize_bool', label='normalize'),
-            Item('log_bool', label='log scale'),
-            Item('draw_legend_bool', label='draw legend'),
-            Item('cmap_selector', label='cmap', visible_when='img_bool'),
-            UItem('image_slider_btn', visible_when='img_bool'),
-            UItem('save_fig_btn'),
+            HGroup(
+                Item('normalize_bool', label='normalize'),
+                Item('log_bool', label='log scale'),
+                Item('cmap_selector', label='cmap', visible_when='img_bool'),
+                UItem('image_slider_btn', visible_when='img_bool'),
+                UItem('save_fig_btn'),
+            ),
         )
         return g
 
@@ -1069,19 +861,9 @@ class BasicFigure(MinimalFigure):
             Include('options_group'),
             handler=MPLInitHandler,
             resizable=True,
-            # scrollable=True,
+            scrollable=True,
         )
         return traits_scroll_view
-
-    def traits_multiple_axes_view(self):
-        traits_scroll_view = View(
-            UItem('figure', editor=MPLFigureEditor(), style='custom'),
-            Include('options_group_axes_sel'),
-            handler=MPLInitHandler,
-            resizable=True,
-        )
-        return traits_scroll_view
-
 
     def image_slider_view(self):
         g = View(
@@ -1114,94 +896,54 @@ class BasicFigure(MinimalFigure):
         )
         return traits_options_view
 
+    ### TEST FUNCTIONS ###
+    t = Range(0,100,1)
+    def _t_changed(self):
+        import numpy as np
+        x = np.linspace(0., 2 * np.pi, np.random.randint(5, 500))
+        y = np.sin(x * self.t)
+        y2 = np.cos(x * self.t)
+        # self.grid = True
+        self.plot(x, y / 10, fmt='o-', linestyle='dashed', label='sin')
+        if np.random.uniform() < 0.5:
+            self.plot(x, y2 / 10, fmt='o', label='cos 1')
+            self.plot(x, y2 / 5., fmt='o', label='cos 2')
+            self.plot(x, y2 / 8., fmt='o', label='cos 3')
 
-class WidgetFigure(BasicFigure):
-    selector_btn = Button('Selector')
-    selectionPatches = List()  # contains patches for image stack analysis
-    selectionPatches_names=Float()
-    clearPatchesBtn = Button('Clear Patches')
-    nColorsFromColormap = Int(5)
+    tblit = Range(0,100,1)
+    def _tblit_changed(self):
+        import numpy as np
+        x = np.linspace(0., 2 * np.pi, np.random.randint(5, 500))
+        y = np.sin(x * self.tblit)
+        y2 = np.cos(x * self.tblit)
+        # self.grid = True
+        self.blit(x, y / 10, fmt='o-', linestyle='dashed', label='sin')
+        if np.random.uniform() < 0.5:
+            self.blit(x, y2 / 10, fmt='o', label='cos 1')
+            self.blit(x, y2 / 5., fmt='o', label='cos 2')
+            self.blit(x, y2 / 8., fmt='o', label='cos 3')
 
-    def _selector_btn_fired(self):
-        self.connectSelector()
+    timg = Range(0,20,1)
+    def _timg_changed(self):
+        nData = np.random.randint(5, 500)
+        x = np.linspace(-10, np.random.randint(5,15), nData)
+        y = np.linspace(-10, np.random.randint(5,15), nData)
+        X, Y = np.meshgrid(x, y)
+        Z = (np.sin(X * self.timg) ** 2 + np.cos(Y) ** 2 * X ** 2 * np.random.random())
+        self.imshow(Z, extent=[x.min(), x.max(), y.min(), y.max()])
 
-    def connectSelector(self):
-        print(self.__class__.__name__, ": Connecting Selector")
-        self.rs = RectangleSelector(self.axes_selector, self.rectangleSelectorFunc, drawtype='box', useblit=True, button=[3])
-
-    def get_selectionPatches_names(self):
-        self.selectionPatches_names = []
-        for i in self.selectionPatches:
-            self.selectionPatches_names.append(i.text)
-
-        return self.selectionPatches_names
-
-    def rectangleSelectorFunc(self, eclick, erelease, cmap=mpl.cm.jet):
-        """
-            Usage:
-            @on_trait_change('fig:selectionPatches:rectUpdated')
-            function name:
-                for p in self.fig.selectionPatches:
-                    do p
-
-        """
-        print(self.__class__.__name__, "Rectangle Selector:")
-        print(self.__class__.__name__, "eclick: {} \n erelease: {}".format(eclick, erelease))
-        print()
-
-        x1, y1 = eclick.xdata, eclick.ydata
-        x2, y2 = erelease.xdata, erelease.ydata
-
-        cNorm = mpl.colors.Normalize(vmin=0, vmax=self.nColorsFromColormap)
-        scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cmap)
-
-        color = scalarMap.to_rgba(len(self.selectionPatches) + 1)
-
-        self.anRect = AnnotatedRectangle(self.axes_selector, x1, y1, x2, y2, 'region ' + str(len(self.selectionPatches)), color=color)
-        self.selectionPatches.append(self.anRect)
-
-        self.canvas.draw()
-
-    def get_SelectedPatch(self, patch):
-        for i, rect in enumerate(self.selectionPatches):
-            if rect.text == patch:
-                break
-
-        return self.selectionPatches[i]
-
-
-    def _clearPatchesBtn_fired(self):
-        self.clear_selectionPatches()
-
-    def clear_selectionPatches(self):
-        if len(self.selectionPatches) != 0:
-            print(self.__class__.__name__, ": Clearing selection patches")
-            for p in self.selectionPatches:
-                try:
-                    p.remove()
-                except ValueError:
-                    print(self.__class__.__name__, ": Patch was not found.")
-
-            self.selectionPatches = []
-            self.canvas.draw()
-
-    def options_group(self):
-        g = HGroup(
-            UItem('options_btn'),
-            UItem('clear_btn'),
-            UItem('line_selector', visible_when='not img_bool'),
-            UItem('copy_data_btn', visible_when='not img_bool'),
-            HGroup(
-                Item('normalize_bool', label='normalize'),
-                Item('log_bool', label='log scale'),
-                Item('cmap_selector', label='cmap', visible_when='img_bool'),
-                UItem('image_slider_btn', visible_when='img_bool'),
-                UItem('save_fig_btn'),
-                UItem('selector_btn'),
-                UItem('clearPatchesBtn'),
-            ),
+    def test_traits_view(self):
+        trait_view = View(
+            UItem('figure', editor=MPLFigureEditor(), style='custom'),
+            Include('options_group'),
+            Item('t'),
+            Item('tblit'),
+            Item('timg'),
+            handler=MPLInitHandler,
+            resizable=True,
+            # scrollable=True,
         )
-        return g
+        return trait_view
 
 
 class BlittedFigure(BasicFigure):
@@ -1209,11 +951,11 @@ class BlittedFigure(BasicFigure):
         self.blit(*args, **kwargs)
 
 
+
 if __name__ == '__main__':
     # minimal_figure = MinimalFigure(figsize=(6 * 1.618, 6), facecolor='w', tight_layout=True)
     # minimal_figure.configure_traits(view='traits_view')
 
-    basic_figure = BasicFigure(figsize=(5 * 1.618, 5), facecolor='w', tight_layout=True)
-    basic_figure.configure_traits()
-    # basic_figure.configure_traits(view='traits_multiple_axes_view')
-    # basic_figure.configure_traits(view='traits_scroll_view')
+    w, h = (5,5)
+    basic_figure = BasicFigure(figsize=(w,h), facecolor='w', tight_layout=True)
+    basic_figure.configure_traits(view='test_traits_view')
