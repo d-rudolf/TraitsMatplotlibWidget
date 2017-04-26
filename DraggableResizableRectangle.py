@@ -6,6 +6,189 @@ from traits.api import HasTraits, Instance, Any, Str, on_trait_change, Int, Even
 import matplotlib.patches as mpatches
 import matplotlib
 
+class DraggableResizeableLine(HasTraits):
+    """
+    Resizable Lines based on the DraggabelResizableRectangle. Draggable is yet not implemented
+    Author: KingKarl, April 2017
+    """
+    lock = None  # only one can be animated at a time
+    updateXY = Int(0)
+    updateText = Int(0)
+    released = Int(0)
+
+    def __init__(self, line, border_tol=0.15, allow_resize=True,
+                 fixed_aspect_ratio=False):
+        super(DraggableResizeableLine,self).__init__()
+        self.line = line
+        self.border_tol = border_tol
+        self.press = None
+
+    def connect(self):
+        'connect to all the events we need'
+        self.cidpress = self.line.figure.canvas.mpl_connect('button_press_event', self.on_press)
+        self.cidrelease = self.line.figure.canvas.mpl_connect('button_release_event', self.on_release)
+        self.cidmotion = self.line.figure.canvas.mpl_connect('motion_notify_event', self.on_motion)
+
+    def on_press(self, event):
+        'on button press we will see if the mouse is over us and store some data'
+        if event.inaxes != self.line.axes: return
+        if DraggableResizeableLine.lock is not None: return
+
+        x,y = self.line.get_data()
+        x0, x1 = x
+        y0, y1 = y
+
+        if not self.within_border_tol([x0, y0],[x1, y1],event): return
+        DraggableResizeableLine.lock = self
+
+        self.press = x0, y0, x1, y1, event.xdata, event.ydata
+
+        canvas = self.line.figure.canvas
+        axes = self.line.axes
+        self.line.set_animated(True)
+        canvas.draw()
+        self.background = canvas.copy_from_bbox(self.line.axes.bbox)
+
+        # now redraw just the rectangle
+        axes.draw_artist(self.line)
+
+        # and blit just the redrawn area
+        canvas.blit(axes.bbox)
+
+    def within_border_tol(self,pos_0, pos_1, event):
+        x0, y0 = pos_0
+        x1, y1 = pos_1
+        xpress, ypress = event.xdata, event.ydata
+
+        bt = self.border_tol * (abs(x0-x1)**2 + abs(y0-y1)**2)**0.5
+
+        if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt) or (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt):
+            return True
+        else:
+            return False
+
+
+    def on_motion(self, event):
+        'on motion we will move the rect if the mouse is over us'
+        if DraggableResizeableLine.lock is not self:
+            return
+        if event.inaxes != self.line.axes: return
+        x0, y0, x1, y1, xpress, ypress = self.press
+        self.dx = event.xdata - xpress
+        self.dy = event.ydata - ypress
+        self.update_line()
+
+        canvas = self.line.figure.canvas
+        axes = self.line.axes
+
+        # restore the background region
+        canvas.restore_region(self.background)
+
+        # redraw just the current line
+        axes.draw_artist(self.line)
+
+        # blit just the redrawn area
+        canvas.blit(axes.bbox)
+        self.updateXY += 1
+
+
+    def on_release(self, event):
+        'on release we reset the press data'
+        if DraggableResizeableLine.lock is not self:
+            return
+
+        self.press = None
+        DraggableResizeableLine.lock = None
+
+        # turn off the rect animation property and reset the background
+        self.line.set_animated(False)
+        self.background = None
+
+        self.updateText +=1
+
+        # redraw the full figure
+        self.line.figure.canvas.draw()
+        self.released += 1
+
+    def disconnect(self):
+        'disconnect all the stored connection ids'
+        self.line.figure.canvas.mpl_disconnect(self.cidpress)
+        self.line.figure.canvas.mpl_disconnect(self.cidrelease)
+        self.line.figure.canvas.mpl_disconnect(self.cidmotion)
+
+    def update_line(self):
+        x0, y0, x1, y1, xpress, ypress = self.press
+        bt = self.border_tol * (abs(x0-x1)**2 + abs(y0-y1)**2)**0.5
+
+        if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt):
+            self.line.set_data([x0+self.dx,x1],[y0+self.dy,y1])
+
+        elif (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt):
+            self.line.set_data([x0,x1+self.dx],[y0,y1+self.dy])
+
+
+class AnnotatedLine(HasTraits):
+
+    axes = Instance(matplotlib.axes.Axes)
+    annotext = Instance(matplotlib.text.Text)
+    text = Str()
+    drl = Instance(DraggableResizeableLine)
+    lineUpdated = Int(0)
+    lineReleased = Int(0)
+
+    def __init__(self, axes, x0, y0, x1, y1,text, color = 'k'):#text, color='c', ecolor='k', alpha=0.7):
+        print("View: Line created")
+        super(AnnotatedLine, self).__init__()
+        self.pos_0 = [x0,y0]
+        self.pos_1 = [x1,y1]
+        self.axes = axes
+        self.text = text
+        line_handle = self.axes.plot([x0,x1],[y0,y1],color = color)[0]
+        self.line = line_handle
+        self.drl = DraggableResizeableLine(line_handle)
+        self.drl.connect()
+
+
+    def disconnect(self):
+        self.drl.disconnect()
+
+    def connect(self):
+        self.drl.connect()
+
+    @on_trait_change('drl.updateText')
+    def updateText(self):
+        print('Draw_Text')
+        try:
+            self.annotext.remove()
+        except AttributeError:
+            print("AnnotatedRectangle: Found no annotated text")
+        x, y = self.line.get_data(orig=False)
+        self.pos_0 = np.array([x[0],y[0]])
+        self.pos_1 = np.array([x[1],y[1]])
+        self.annotext = self.axes.annotate(self.text, self.pos_1+(self.pos_0-self.pos_1)/2, color='w', weight='bold',fontsize=6, ha='center', va='center')
+
+
+    @on_trait_change('drl.updateXY')
+    def xyLineUpdated(self):
+        self.lineUpdated += 1
+
+    @on_trait_change('drl.released')
+    def released(self):
+        print("AnnotatedRectangle: Rectangle released")
+        x, y = self.line.get_data()
+        self.pos_0 = np.array([x[0],y[0]])
+        self.pos_1 = np.array([x[1],y[1]])
+        self.lineReleased += 1
+
+    def get_pos(self):
+        return self.pos_0, self.pos_1
+
+    def remove(self):
+        self.line.remove()
+        self.annotext.remove()
+        del self
+
+
 class DraggableResizeableRectangle(HasTraits):
     """
     Draggable and resizeable rectangle with the animation blit techniques.
@@ -74,8 +257,7 @@ class DraggableResizeableRectangle(HasTraits):
         x0, y0, w0, h0, aspect_ratio, xpress, ypress = self.press
         self.dx = event.xdata - xpress
         self.dy = event.ydata - ypress
-        #self.rect.set_x(x0+dx)
-        #self.rect.set_y(y0+dy)
+
 
         self.update_rect()
 
@@ -237,6 +419,11 @@ class AnnotatedRectangle(HasTraits):
     def get_rect_height(self):
         return self.drr.rect.get_height()
 
+    def disconnect(self):
+        self.drr.disconnect()
+
+    def connect(self):
+        self.drr.connect()
 
 if __name__ == '__main__':
     p = mpatches.Rectangle((0.5, 0.5), 0.2, 0.2, ec="k", color='c', alpha=0.7)
