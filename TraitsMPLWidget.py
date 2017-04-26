@@ -1,6 +1,5 @@
 from __future__ import division, print_function
 from pyface.qt import QtGui, QtCore
-
 try:
     import win32clipboard
     print("Using win32clipboard")
