@@ -11,6 +11,7 @@ except:
 import matplotlib as mpl
 mpl.use('Qt4Agg')
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import useful as usf
 
@@ -1063,17 +1064,20 @@ class BasicFigure(MinimalFigure):
 
 
 class WidgetFigure(BasicFigure):
+    nColorsFromColormap = Int(5)
+
     lock_all_btn = Button('Lock all Widges')
     act_all_btn = Button('Activate all Widgets')
-    rec_selector_btn = Button('Rectangle Selector')
 
+    rec_selector_btn = Button('Rectangle Selector')
     selectionPatches = List()  # contains patches for image stack analysis
-    selectionPatches_names=Float()
+    selectionPatches_names=List()
     clearPatchesBtn = Button('Clear Patches')
-    nColorsFromColormap = Int(5)
+
 
     lin_selector_btn = Button('Line Selector')
     selectionLines = List()
+    selectionLines_names=List()
     clearLinesBtn = Button('Clear Lines')
 
     def _lock_all_btn_fired(self):
@@ -1121,14 +1125,8 @@ class WidgetFigure(BasicFigure):
         text = 'line ' + str(len(self.selectionLines))
         line = AnnotatedLine(self.axes_selector,x0, y0, x1, y1,text=text,color=color)
         self.selectionLines.append(line)
+        self.selectionLines_names.append(line.text)
         self.canvas.draw()
-
-    def get_selectionLines_names(self):
-        self.get_selectionLines_names = []
-        for i in self.selectionLines:
-            self.get_selectionLines_names.append(i.text)
-
-        return self.get_selectionLines_names
 
     def get_SelectedLine(self, patch):
         for i, line in enumerate(self.selectionLines):
@@ -1146,6 +1144,7 @@ class WidgetFigure(BasicFigure):
                 except ValueError:
                     print(self.__class__.__name__, ": Line was not found.")
             self.selectionLines = []
+            self.selectionLines_names = []
 
         self.canvas.draw()
 
@@ -1219,6 +1218,11 @@ class WidgetFigure(BasicFigure):
 
             self.selectionPatches = []
             self.canvas.draw()
+
+    def clear_widgets(self):
+        self._clearPatchesBtn_fired
+        self._clearLinesBtn_fired
+
 
     def options_group(self):
         g = HGroup(

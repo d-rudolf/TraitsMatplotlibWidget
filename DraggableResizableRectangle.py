@@ -62,7 +62,7 @@ class DraggableResizeableLine(HasTraits):
 
         bt = self.border_tol * (abs(x0-x1)**2 + abs(y0-y1)**2)**0.5
 
-        if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt) or (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt):
+        if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt) or (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt) or (abs((x0+x1)/2-xpress)**2+abs((y0+y1)/2-ypress)**2)**0.5<2**0.5*abs(bt):
             return True
         else:
             return False
@@ -120,12 +120,14 @@ class DraggableResizeableLine(HasTraits):
         x0, y0, x1, y1, xpress, ypress = self.press
         bt = self.border_tol * (abs(x0-x1)**2 + abs(y0-y1)**2)**0.5
 
-        if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt):
+        if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt): # Check for if mouse close to start (pos 0) of line
             self.line.set_data([x0+self.dx,x1],[y0+self.dy,y1])
 
-        elif (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt):
+        elif (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt): # Check for if mouse close to start (pos 1) of line
             self.line.set_data([x0,x1+self.dx],[y0,y1+self.dy])
 
+        elif (abs((x0+x1)/2-xpress)**2+abs((y0+y1)/2-ypress)**2)**0.5<2**0.5*abs(bt): # Make line draggable at center
+            self.line.set_data([x0+self.dx,x1+self.dx],[y0+self.dy,y1+self.dy])
 
 class AnnotatedLine(HasTraits):
 
@@ -162,7 +164,7 @@ class AnnotatedLine(HasTraits):
             self.annotext.remove()
         except AttributeError:
             print("AnnotatedRectangle: Found no annotated text")
-        x, y = self.line.get_data(orig=False)
+        x, y = self.line.get_data()
         self.pos_0 = np.array([x[0],y[0]])
         self.pos_1 = np.array([x[1],y[1]])
         self.annotext = self.axes.annotate(self.text, self.pos_1+(self.pos_0-self.pos_1)/2, color='w', weight='bold',fontsize=6, ha='center', va='center')
