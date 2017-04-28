@@ -11,7 +11,6 @@ except:
 import matplotlib as mpl
 mpl.use('Qt4Agg')
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 from traitsui.qt4.editor import Editor
@@ -1069,18 +1068,57 @@ class WidgetFigure(BasicFigure):
     lock_all_btn = Button('Lock all Widges')
     act_all_btn = Button('Activate all Widgets')
 
-    rec_selector_btn = Button('Rectangle Selector')
-    selectionPatches = List()  # contains patches for image stack analysis
+    unlock_all_btn = Button('(Un-) Lock')
+    posWidgets_list = List()
+    selectWidget_sel= Enum(values = 'posWidgets_list')
+    clearWidgetBtn = Button('Clear Current Widget')
+
+    selectionPatches = List()
     selectionPatches_names=List()
-    clearPatchesBtn = Button('Clear Patches')
 
-
-    lin_selector_btn = Button('Line Selector')
     selectionLines = List()
     selectionLines_names=List()
-    clearLinesBtn = Button('Clear Lines')
 
-    def _lock_all_btn_fired(self):
+    def _selectWidget_sel_default(self):
+        w = self.posWidgets_list[0]
+        self._lin_selector()
+        return w
+
+    def _clearWidgetBtn_fired(self):
+        if self.selectWidget_sel == self.posWidgets_list[0]:
+            self._clearLines()
+
+        if self.selectWidget_sel == self.posWidgets_list[1]:
+            self._clearPatches()
+
+    @on_trait_change('selectWidget_sel')
+    def _selectWidget(self,widget):
+        if widget == self.posWidgets_list[0]:
+            self._lin_selector()
+
+        if widget == self.posWidgets_list[1]:
+            self._rec_selector()
+
+
+    def _unlock_all_btn_fired(self):
+        try:
+            if not self.lock:
+                self.lock = True
+                self._lock_all()
+            else:
+                self.lock = False
+                self._act_all()
+        except:
+            self.lock = False
+            self._unlock_all_btn_fired()
+
+    def _posWidgets_list_default(self):
+        w = list()
+        w.append('Line Selector')
+        w.append('Rectangle Selector')
+        return w
+
+    def _lock_all(self):
         try:
             self.rs.disconnect_events()
             for i in self.selectionPatches: i.disconnect()
@@ -1094,11 +1132,11 @@ class WidgetFigure(BasicFigure):
             print('No line to lock')
 
 
-    def _act_all_btn_fired(self):
+    def _act_all(self):
         for i in self.selectionPatches: i.connect()
         for i in self.selectionLines: i.connect()
 
-    def _lin_selector_btn_fired(self):
+    def _lin_selector(self):
         try:
             self.rs.disconnect_events()
             DraggableResizeableRectangle.lock = True
@@ -1134,7 +1172,7 @@ class WidgetFigure(BasicFigure):
                 break
         return self.selectionLines[i]
 
-    def _clearLinesBtn_fired(self):
+    def _clearLines(self):
         print(self.__class__.__name__, ": Clearing selection lines")
         if len(self.selectionLines) != 0:
             print(self.__class__.__name__, ": Clearing selection lines")
@@ -1148,10 +1186,8 @@ class WidgetFigure(BasicFigure):
 
         self.canvas.draw()
 
-    def _rec_selector_btn_fired(self):
-        self.rec_connectSelector()
 
-    def rec_connectSelector(self):
+    def _rec_selector(self):
         try:
             self.ls.disconnect_events()
             DraggableResizeableLine.lock = True
@@ -1204,10 +1240,8 @@ class WidgetFigure(BasicFigure):
 
         return self.selectionPatches[i]
 
-    def _clearPatchesBtn_fired(self):
-        self.clear_selectionPatches()
 
-    def clear_selectionPatches(self):
+    def _clearPatches(self):
         if len(self.selectionPatches) != 0:
             print(self.__class__.__name__, ": Clearing selection patches")
             for p in self.selectionPatches:
@@ -1220,8 +1254,8 @@ class WidgetFigure(BasicFigure):
             self.canvas.draw()
 
     def clear_widgets(self):
-        self._clearPatchesBtn_fired
-        self._clearLinesBtn_fired
+        self._clearPatchesBtn_fired()
+        self._clearLinesBtn_fired()
 
 
     def options_group(self):
@@ -1240,12 +1274,9 @@ class WidgetFigure(BasicFigure):
                         UItem('save_fig_btn'),
                     ),
                     HGroup(
-                        UItem('rec_selector_btn'),
-                        UItem('clearPatchesBtn'),
-                        UItem('lin_selector_btn'),
-                        UItem('clearLinesBtn'),
-                        UItem('lock_all_btn'),
-                        UItem('act_all_btn'),
+                        UItem('selectWidget_sel'),
+                        UItem('unlock_all_btn'),
+                        UItem('clearWidgetBtn'),
                     )
                 )
 

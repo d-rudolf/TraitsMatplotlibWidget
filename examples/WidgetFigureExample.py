@@ -2,8 +2,8 @@ from __future__ import print_function, division
 
 from TraitsMPLWidget import WidgetFigure, BasicFigure
 
-from traits.api import HasTraits, Instance, Array, on_trait_change
-from traitsui.api import View, UItem, HGroup
+from traits.api import HasTraits, Instance, Array, on_trait_change, List, Enum
+from traitsui.api import View, UItem, HGroup, VGroup, Item
 import numpy as np
 
 class WidgetFigureExample(HasTraits):
@@ -16,6 +16,12 @@ class WidgetFigureExample(HasTraits):
 
     data = Array
 
+    def _act_lin_list_defautl(self):
+        w = list()
+        w.append(0)
+        w.append(1)
+        return w
+
     @on_trait_change('fig.selectionLines_names[]')
     def update_line_list(self):
         self.line_list = self.fig.selectionLines_names
@@ -26,7 +32,16 @@ class WidgetFigureExample(HasTraits):
     def plt_linecut(self):
         print('update selector',self.line_sel)
         x,y = self.fig.get_SelectedLine(self.line_sel).line.get_data()
-        self.linefig.plot(x,y,label='_no_legend')
+
+        len_x = abs(x[1] - x[0])
+        len_y = abs(y[1] - y[0])
+        len_line = np.sqrt(len_x ** 2 + len_y ** 2)
+        x = np.linspace(x[0], x[1], len_line)
+        y = np.linspace(y[0], y[1], len_line)
+        x, y = x.astype(np.int), y.astype(np.int)
+
+        line_cut = np.array(self.data[y,x])
+        self.linefig.plot(range(0,line_cut.shape[0]),line_cut,label='_no_legend')
 
 
     @on_trait_change('fig:selectionPatches:rectUpdated')
@@ -93,7 +108,7 @@ class WidgetFigureExample(HasTraits):
                 ),
                 HGroup(
                 UItem('linefig',style='custom'),
-                Item('line_sel',label='Select line cut')
+                Item('line_sel',label='Select line cut'),
                 ),
             ),
         )
