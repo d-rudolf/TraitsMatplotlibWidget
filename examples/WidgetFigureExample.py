@@ -9,8 +9,25 @@ import numpy as np
 class WidgetFigureExample(HasTraits):
     fig = Instance(WidgetFigure)
     zoomfig = Instance(BasicFigure)
+    linefig = Instance(BasicFigure)
+
+    line_list = List()
+    line_sel = Enum(values='line_list')
 
     data = Array
+
+    @on_trait_change('fig.selectionLines_names[]')
+    def update_line_list(self):
+        self.line_list = self.fig.selectionLines_names
+        if self.line_sel:
+            self.line_sel = self.fig.selectionLines_names[0]
+
+    @on_trait_change('line_sel, fig:selectionLines:lineReleased')
+    def plt_linecut(self):
+        print('update selector',self.line_sel)
+        x,y = self.fig.get_SelectedLine(self.line_sel).line.get_data()
+        self.linefig.plot(x,y,label='_no_legend')
+
 
     @on_trait_change('fig:selectionPatches:rectUpdated')
     def calculate_picture_region_sum(self, new):
@@ -51,6 +68,10 @@ class WidgetFigureExample(HasTraits):
         w = BasicFigure(facecolor='w')
         return w
 
+    def _linefig_default(self):
+        w = BasicFigure(facecolor='w')
+        return w
+
     def _data_default(self):
         x = np.linspace(-.5,1.,500)
         y = np.linspace(-.5,1.,500)
@@ -65,9 +86,15 @@ class WidgetFigureExample(HasTraits):
 
     def traits_view(self):
         view = View(
-            HGroup(
-                UItem('fig', style='custom'),
-                UItem('zoomfig', style='custom'),
+            VGroup(
+                HGroup(
+                    UItem('fig', style='custom'),
+                    UItem('zoomfig', style='custom'),
+                ),
+                HGroup(
+                UItem('linefig',style='custom'),
+                Item('line_sel',label='Select line cut')
+                ),
             ),
         )
         return view
