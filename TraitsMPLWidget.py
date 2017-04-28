@@ -13,7 +13,6 @@ mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import useful as usf
 
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
@@ -876,6 +875,7 @@ class BasicFigure(MinimalFigure):
         if not nodraw:
             self._normalize_bool_changed()
             self.draw()  # draws with respect to autolim etc.
+            # self.start_thread('draw()')  # kind of working ...
 
         if hasattr(line, "append"):
             return line[0]
