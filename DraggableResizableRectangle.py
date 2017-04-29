@@ -57,6 +57,8 @@ class DraggableResizeableLine(HasTraits):
     updateXY = Int(0)
     updateText = Int(0)
     released = Int(0)
+    axes_xlim = None
+    axes_ylim = None
 
     def __init__(self, line, border_tol=0.15, allow_resize=True,
                  fixed_aspect_ratio=False):
@@ -64,6 +66,11 @@ class DraggableResizeableLine(HasTraits):
         self.line = line
         self.border_tol = border_tol
         self.press = None
+
+        if DraggableResizeableLine.axes_xlim is None:
+            DraggableResizeableLine.axes_xlim = self.line.axes.get_xlim()
+        if DraggableResizeableLine.axes_ylim is None:
+            DraggableResizeableLine.axes_ylim = self.line.axes.get_ylim()
 
     def connect(self):
         'connect to all the events we need'
@@ -75,6 +82,12 @@ class DraggableResizeableLine(HasTraits):
         'on button press we will see if the mouse is over us and store some data'
         if event.inaxes != self.line.axes: return
         if DraggableResizeableLine.lock is not None: return
+
+        if np.abs(self.line.axes.get_xlim()[0]-self.line.axes.get_xlim()[1])>np.abs(DraggableResizeableLine.axes_xlim[0]-DraggableResizeableLine.axes_xlim[1]):
+            DraggableResizeableLine.axes_xlim = self.line.axes.get_xlim()
+
+        if np.abs(self.line.axes.get_ylim()[0]-self.line.axes.get_ylim()[1])>np.abs(DraggableResizeableLine.axes_ylim[0]-DraggableResizeableLine.axes_ylim[1]):
+            DraggableResizeableLine.axes_ylim = self.line.axes.get_ylim()
 
         x,y = self.line.get_data()
         x0, x1 = x
@@ -164,7 +177,7 @@ class DraggableResizeableLine(HasTraits):
 
         dx, dy = self.dx, self.dy
 
-        dx, dy = axes_boundery_check([x0,y0],[x1,y1],dx,dy,self.line.axes.get_xlim(),self.line.axes.get_ylim())
+        dx, dy = axes_boundery_check([x0,y0],[x1,y1],dx,dy,DraggableResizeableLine.axes_xlim,DraggableResizeableLine.axes_ylim)
 
         if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt): # Check for if mouse close to start (pos 0) of line
             self.line.set_data([x0+dx,x1],[y0+dy,y1])
@@ -250,7 +263,11 @@ class DraggableResizeableRectangle(HasTraits):
     updateText = Int(0)
     updateXY = Int(0)
     released = Int(0)
+
     lock = None  # only one can be animated at a time
+    axes_xlim = None # Needed to allow widget to leave boundaries of zoomed in data. Might be unnecessary of matplotlib allows do get the unzoomed axes.
+    axes_ylim = None
+
     def __init__(self, rect, border_tol=.15, allow_resize=True,
                  fixed_aspect_ratio=False):
         self.rect = rect
@@ -259,6 +276,11 @@ class DraggableResizeableRectangle(HasTraits):
         self.fixed_aspect_ratio = fixed_aspect_ratio
         self.press = None
         self.background = None
+
+        if DraggableResizeableRectangle.axes_xlim is None:
+            DraggableResizeableRectangle.axes_xlim = self.rect.axes.get_xlim()
+        if DraggableResizeableRectangle.axes_ylim is None:
+            DraggableResizeableRectangle.axes_ylim = self.rect.axes.get_ylim()
 
 
     def connect(self):
@@ -276,7 +298,13 @@ class DraggableResizeableRectangle(HasTraits):
         if DraggableResizeableRectangle.lock is not None: return
         contains, attrd = self.rect.contains(event)
         if not contains: return
-        #print 'event contains', self.rect.xy
+
+        if np.abs(self.rect.axes.get_xlim()[0]-self.rect.axes.get_xlim()[1])>np.abs(DraggableResizeableRectangle.axes_xlim[0]-DraggableResizeableRectangle.axes_xlim[1]):
+            DraggableResizeableRectangle.axes_xlim = self.rect.axes.get_xlim()
+
+        if np.abs(self.rect.axes.get_ylim()[0]-self.rect.axes.get_ylim()[1])>np.abs(DraggableResizeableRectangle.axes_ylim[0]-DraggableResizeableRectangle.axes_ylim[1]):
+            DraggableResizeableRectangle.axes_ylim = self.rect.axes.get_ylim()
+
         x0, y0 = self.rect.xy
         w0, h0 = self.rect.get_width(), self.rect.get_height()
         aspect_ratio = np.true_divide(w0, h0)
