@@ -6,6 +6,48 @@ from traits.api import HasTraits, Instance, Any, Str, on_trait_change, Int, Even
 import matplotlib.patches as mpatches
 import matplotlib
 
+def axes_boundery_check(pos_1,pos_2,dx,dy,xlim,ylim):
+    '''
+    Checks whether the movement of the widget would result in a final position which is outside of the data range. If 
+    widget being outside of data range, it sets dx/ dy so that the widget is at the closest value inside the data.
+    :param pos_1: Widget source point 1
+    :param pos_2: Widget source point 2
+    :param dx: shift of widget in x direction
+    :param dy: shift of widget in y direction
+    :param xlim: axes limits in x direction
+    :param ylim: axes limits in y direction
+    :return: Returns 
+    '''
+    x0, y0 = pos_1
+    x1, y1 = pos_2
+
+    if np.min([x0 + dx, x1 + dx]) < np.min(xlim):
+        if x0 < x1:
+            dx = np.min(xlim) - x0
+        else:
+            dx = np.min(xlim) - x1
+
+    if np.max([x0 + dx, x1 + dx]) > np.max(xlim):
+        if x0 > x1:
+            dx = np.max(xlim) - x0
+        else:
+            dx = np.max(xlim) - x1
+
+    if np.min([y0 + dy, y1 + dy]) < np.min(ylim):
+        if y0 < y1:
+            dy = np.min(ylim) - y0
+        else:
+            dy = np.min(ylim) - y1
+
+    if np.max([y0 + dy, y1 + dy]) > np.max(ylim):
+        if y0 > y1:
+            dy = np.max(ylim) - y0
+        else:
+            dy = np.max(ylim) - y1
+
+    return dx, dy
+
+
 class DraggableResizeableLine(HasTraits):
     """
     Resizable Lines based on the DraggabelResizableRectangle. Draggable is yet not implemented
@@ -120,14 +162,18 @@ class DraggableResizeableLine(HasTraits):
         x0, y0, x1, y1, xpress, ypress = self.press
         bt = self.border_tol * (abs(x0-x1)**2 + abs(y0-y1)**2)**0.5
 
+        dx, dy = self.dx, self.dy
+
+        dx, dy = axes_boundery_check([x0,y0],[x1,y1],dx,dy,self.line.axes.get_xlim(),self.line.axes.get_ylim())
+
         if (abs(x0-xpress)**2+abs(y0-ypress)**2)**0.5<2**0.5*abs(bt): # Check for if mouse close to start (pos 0) of line
-            self.line.set_data([x0+self.dx,x1],[y0+self.dy,y1])
+            self.line.set_data([x0+dx,x1],[y0+dy,y1])
 
         elif (abs(x1-xpress)**2+abs(y1-ypress)**2)**0.5<2**0.5*abs(bt): # Check for if mouse close to start (pos 1) of line
-            self.line.set_data([x0,x1+self.dx],[y0,y1+self.dy])
+            self.line.set_data([x0,x1+dx],[y0,y1+dy])
 
         elif (abs((x0+x1)/2-xpress)**2+abs((y0+y1)/2-ypress)**2)**0.5<2**0.5*abs(bt): # Make line draggable at center
-            self.line.set_data([x0+self.dx,x1+self.dx],[y0+self.dy,y1+self.dy])
+            self.line.set_data([x0+dx,x1+dx],[y0+dy,y1+dy])
 
 class AnnotatedLine(HasTraits):
 
@@ -159,7 +205,6 @@ class AnnotatedLine(HasTraits):
 
     @on_trait_change('drl.updateText')
     def updateText(self):
-        print('Draw_Text')
         try:
             self.annotext.remove()
         except AttributeError:
@@ -304,6 +349,9 @@ class DraggableResizeableRectangle(HasTraits):
         dx, dy = self.dx, self.dy
         bt = self.border_tol
         fixed_ar = self.fixed_aspect_ratio
+
+        dx, dy = axes_boundery_check([x0,y0],[x0+w0,y0+h0],dx,dy,self.rect.axes.get_xlim(),self.rect.axes.get_ylim())
+
         if (not self.allow_resize or
             (abs(x0+np.true_divide(w0,2)-xpress)<np.true_divide(w0,2)-bt*w0 and
              abs(y0+np.true_divide(h0,2)-ypress)<np.true_divide(h0,2)-bt*h0)):
