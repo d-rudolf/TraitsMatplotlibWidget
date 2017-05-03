@@ -1,9 +1,12 @@
 import numpy as np
 from scipy.interpolate import griddata
 from scipy.interpolate import RectBivariateSpline
-from scipy.interpolate import interp2d
+from scipy.interpolate import interp2d, interp1d
 from scipy.optimize import curve_fit
 from scipy.special import erf
+from sklearn.cluster import KMeans
+from operator import itemgetter
+import matplotlib.pyplot as plt
 
 class Math_Util():
 
@@ -88,3 +91,136 @@ class Math_Util():
 
     def func(self,x,a,sigma,x_0,offset):
         return a*erf((x-x_0)/sigma*1/np.sqrt(2))+offset
+
+    def get_cluster(self,x,y):
+        """
+        uses kmeans to find two cluster
+        :param x: x coords of the line
+        :param y: y coords of the line
+        :return: x,y values of cluster1 and cluster2
+        """
+        data = y.reshape(-1, 1)
+        kmeans = KMeans(n_clusters=2).fit(data)
+        labels = kmeans.labels_
+        # label cluster in the same way
+        if labels[0] == 1:
+            labels = [0 if elem == 1 else 1 for elem in labels]
+        cluster1_x, cluster1_y = [], []
+        cluster2_x, cluster2_y = [], []
+        for index, item in enumerate(labels):
+            if item == 0:
+                cluster1_x.append(x[index])
+                cluster1_y.append(y[index])
+
+            if item == 1:
+                cluster2_x.append(x[index])
+                cluster2_y.append(y[index])
+        return [cluster1_x,cluster1_y],[cluster2_x, cluster2_y]
+
+    def get_plateaus(self, cluster1, cluster2):
+        """
+        finds the plateaus in the clusters (to calculate the y half width later)
+        :param cluster1, cluster2    
+        :return: plateau region of two cluster
+        """
+        def norm(data):
+            """
+            calculates the normalized distribution
+            :param data: 
+            :return: normalized data
+            """
+            data = np.array(data)
+           # print 'mean: {0}, std {1}'.format(data.mean(), data.std())
+            return (data - data.mean()) / data.std()
+
+        def get_outlier_index(cluster):
+            """
+            gets the index of outliers
+            :param cluster: cluster values (y values)  
+            :return: index list of outliers
+            """
+            index_list = []
+            cluster_norm = norm(cluster)
+            for index, item in enumerate(cluster_norm):
+                # item in std
+                if abs(item) > 1.5:
+                    index_list.append(index)
+            return index_list
+
+        def remove_outliers(cluster, index_list):
+            """
+            :param cluster: list of x, list of y values
+            :param index_list: indices of values to delete
+            :return: cluster without outliers
+            """
+            cluster_out = []
+            for data in cluster:
+                data_out = np.delete(data, index_list)
+                cluster_out.append(data_out)
+            return cluster_out
+
+        def clean_data(cluster, num_it):
+            """
+            :param cluster: list of x, list of y values
+            :num_it: number of iterations
+            :return: cleaned cluster with outliers removed
+            """
+            for i in range(0, num_it):
+                index_list = get_outlier_index(cluster[1])
+                cluster_clean = remove_outliers(cluster, index_list)
+                cluster = cluster_clean
+            return cluster
+
+        cluster = [cluster1, cluster2]
+        for elem in cluster:
+            data = clean_data(elem, 10)
+            if elem == cluster1:
+                cluster1_clean_x = data[0]
+                cluster1_clean_y = data[1]
+            else:
+                cluster2_clean_x = data[0]
+                cluster2_clean_y = data[1]
+        return [cluster1_clean_x, cluster1_clean_y], [cluster2_clean_x, cluster2_clean_y]
+
+    def get_half_maximum(self, y1, y2):
+        """    
+        :param y1,y2: y values of two plateau regions  
+        :return: half maximum 
+        """
+        y1, y2 = np.array(y1), np.array(y2)
+        return np.abs(y1.mean() + y2.mean()) / 2.0
+
+    def get_fwhm(self, x, y, c1, c2, hm):
+        """
+        rearranges the data from c1 and c2 and calculates the full width at half max
+        :param x, y: raw line coords  
+        :param c1,c2: plateau region of the clusters  
+        :param hm: half max
+        :return: fwhm, x,y values to plot fwhm
+        """
+        x_c = np.concatenate((np.array(c1[0]), np.array(c2[0])))
+        y_c = np.concatenate((np.array(c1[1]), np.array(c2[1])))
+        set_x_c = set(x_c)
+        set_y_c = set(y_c)
+        # get the outliers from the clusters including the edge
+        diff_x = [value for value in x if value not in set_x_c]
+        diff_y = [value for value in y if value not in set_y_c]
+
+        def sort_and_split(x, y):
+            """
+            :param x: x values
+            :param y: y values
+            :return: sorted and splitted (by half) points, first left(x,y), then right(x,y)
+            """
+            x_y_sorted = sorted(zip(x, y), key=itemgetter(0))
+            mid = int(len(x_y_sorted) / 2.0)
+            x_y_sorted_left = x_y_sorted[0:mid - 1]
+            x_y_sorted_right = x_y_sorted[mid:len(x_y_sorted) - 1]
+            return map(list, zip(*x_y_sorted_left)), map(list, zip(*x_y_sorted_right))
+        # sort and split the points removed by remove_outliers
+        points = sort_and_split(diff_x, diff_y)
+        x_left, y_left, x_right, y_right = points[0][0], points[0][1], points[1][0],points[1][1]
+        f_left = interp1d(y_left, x_left, kind='linear')
+        f_right = interp1d(y_right, x_right, kind='linear')
+        fwhm = abs(f_left(hm)-f_right(hm))
+        return fwhm,[f_left(hm),f_right(hm)],[hm,hm]
