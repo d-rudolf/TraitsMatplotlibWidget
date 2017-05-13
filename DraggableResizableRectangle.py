@@ -72,6 +72,12 @@ class DraggableResizeableLine(HasTraits):
         if DraggableResizeableLine.axes_ylim is None:
             DraggableResizeableLine.axes_ylim = self.line.axes.get_ylim()
 
+    @staticmethod
+    def reset_borders():
+        DraggableResizeableLine.axes_xlim = None
+        DraggableResizeableLine.axes_ylim = None
+        print('Reset of DraggableResizableLines Border to None')
+
     def connect(self):
         'connect to all the events we need'
         self.cidpress = self.line.figure.canvas.mpl_connect('button_press_event', self.on_press)
@@ -268,6 +274,12 @@ class DraggableResizeableRectangle(HasTraits):
     axes_xlim = None # Needed to allow widget to leave boundaries of zoomed in data. Might be unnecessary of matplotlib allows do get the unzoomed axes.
     axes_ylim = None
 
+    @staticmethod
+    def reset_borders():
+        DraggableResizeableRectangle.axes_xlim = None
+        DraggableResizeableRectangle.axes_ylim = None
+        print('Reset of DraggableResizableRectangle Border to None')
+
     def __init__(self, rect, border_tol=.15, allow_resize=True,
                  fixed_aspect_ratio=False):
         self.rect = rect
@@ -281,7 +293,6 @@ class DraggableResizeableRectangle(HasTraits):
             DraggableResizeableRectangle.axes_xlim = self.rect.axes.get_xlim()
         if DraggableResizeableRectangle.axes_ylim is None:
             DraggableResizeableRectangle.axes_ylim = self.rect.axes.get_ylim()
-
 
     def connect(self):
         'connect to all the events we need'
