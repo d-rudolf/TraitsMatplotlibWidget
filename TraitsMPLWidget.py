@@ -1144,7 +1144,7 @@ class WidgetFigure(BasicFigure):
 
         print(self.__class__.__name__, ": Connecting Line Selector")
         DraggableResizeableLine.lock = None
-        self.ls = RectangleSelector(self.axes_selector, self.line_selector_func, drawtype='line', useblit=True,button=[3])
+        self.ls = RectangleSelector(self.axes_selector, self.line_selector_func, drawtype='line', useblit=True, button=[3])
 
     def line_selector_func(self,eclick,erelease,cmap=mpl.cm.jet):
         print(self.__class__.__name__, "Line Selector:")
@@ -1164,10 +1164,12 @@ class WidgetFigure(BasicFigure):
         self.canvas.draw()
 
     def get_widget_line(self, line_name):
+        line_handle = None
         for i, line in enumerate(self.drawn_lines):
             if line.text == line_name:
+                line_handle = line
                 break
-        return self.drawn_lines[i]
+        return line_handle
 
     def clear_lines(self):
         print(self.__class__.__name__, ": Clearing selection lines")
@@ -1225,11 +1227,12 @@ class WidgetFigure(BasicFigure):
         self.canvas.draw()
 
     def get_widget_patch(self, patch_name):
+        patch = None
         for i, rect in enumerate(self.drawn_patches):
             if rect.text == patch_name:
+                patch = rect
                 break
-
-        return self.drawn_patches[i]
+        return patch
 
 
     def clear_patches(self):
@@ -1240,7 +1243,8 @@ class WidgetFigure(BasicFigure):
                     p.remove()
                 except ValueError:
                     print(self.__class__.__name__, ": Patch was not found.")
-
+            DraggableResizeableLine.reset_borders()
+            DraggableResizeableRectangle.reset_borders()
             self.drawn_patches = []
             self.canvas.draw()
 
