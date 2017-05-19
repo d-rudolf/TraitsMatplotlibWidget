@@ -340,9 +340,9 @@ class MinimalFigure(HasTraits):
     def _save_fig_btn_fired(self):
         dlg = FileDialog(action='save as')
         if dlg.open() == OK:
-            self.savefig(dlg.filename + ".png", dpi=300)
-            self.savefig(dlg.filename + ".eps")
-            self.savefig(dlg.filename + ".pdf")
+            self.savefig(dlg.path + '/' + dlg.filename + ".png", dpi=300)
+            self.savefig(dlg.path + '/' + dlg.filename + ".eps")
+            self.savefig(dlg.path + '/' + dlg.filename + ".pdf")
             # cPickle.dump(self, open("dlg.filename" + ".pkl", "wb"))
 
     def savefig(self, *args, **kwargs):
