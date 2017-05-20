@@ -86,6 +86,7 @@ class DraggableResizeableLine(HasTraits):
 
     def on_press(self, event):
         'on button press we will see if the mouse is over us and store some data'
+        if self.line.figure.canvas.toolbar._active is not None: return
         if event.inaxes != self.line.axes: return
         if DraggableResizeableLine.lock is not None: return
 
@@ -305,6 +306,7 @@ class DraggableResizeableRectangle(HasTraits):
 
     def on_press(self, event):
         'on button press we will see if the mouse is over us and store some data'
+        if self.rect.figure.canvas.toolbar._active is not None: return
         if event.inaxes != self.rect.axes: return
         if DraggableResizeableRectangle.lock is not None: return
         contains, attrd = self.rect.contains(event)
