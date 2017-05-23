@@ -1084,7 +1084,6 @@ class WidgetFigure(BasicFigure):
 
     def _widget_sel_default(self):
         w = 'Line Selector'
-        self._line_selector()
         return w
 
     def _widget_clear_btn_fired(self):
@@ -1101,33 +1100,6 @@ class WidgetFigure(BasicFigure):
 
         if widget == self.widget_list[1]:
             self._rec_selector()
-
-
-    def _unlock_all_btn_fired(self):
-        try:
-            if not self.lock:
-                self.lock = True
-                self.lock_all()
-            else:
-                self.lock = False
-                self.act_all()
-        except:
-            self.lock = False
-            self._unlock_all_btn_fired()
-
-    def lock_all(self):
-        try:
-            self.rs.disconnect_events()
-            for i in self.drawn_patches: i.disconnect()
-        except:
-            print('No Rectangle to lock')
-
-        try:
-            self.ls.disconnect_events()
-            for i in self.drawn_lines: i.disconnect()
-        except:
-            print('No line to lock')
-
 
     def act_all(self):
         for i in self.drawn_patches: i.connect()
@@ -1184,7 +1156,6 @@ class WidgetFigure(BasicFigure):
             self.drawn_lines_names = []
 
         self.canvas.draw()
-
 
     def _rec_selector(self):
         try:
@@ -1270,7 +1241,6 @@ class WidgetFigure(BasicFigure):
                     ),
                     HGroup(
                         UItem('widget_sel'),
-                        UItem('unlock_all_btn'),
                         UItem('widget_clear_btn'),
                     )
                 )
