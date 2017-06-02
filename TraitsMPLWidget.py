@@ -340,9 +340,9 @@ class MinimalFigure(HasTraits):
     def _save_fig_btn_fired(self):
         dlg = FileDialog(action='save as')
         if dlg.open() == OK:
-            self.savefig(dlg.path + '/' + dlg.filename + ".png", dpi=300)
-            self.savefig(dlg.path + '/' + dlg.filename + ".eps")
-            self.savefig(dlg.path + '/' + dlg.filename + ".pdf")
+            self.savefig(dlg.path + ".png", dpi=300)
+            self.savefig(dlg.path + ".eps")
+            self.savefig(dlg.path + ".pdf")
             # cPickle.dump(self, open("dlg.filename" + ".pkl", "wb"))
 
     def savefig(self, *args, **kwargs):
@@ -1067,7 +1067,7 @@ class WidgetFigure(BasicFigure):
 
     unlock_all_btn = Button('(Un-) Lock')
     widget_list = List()
-    widget_sel = Enum(values = 'widget_list')
+    widget_sel = Enum(values='widget_list')
     widget_clear_btn = Button('Clear Current Widgets')
 
     drawn_patches = List()
@@ -1130,7 +1130,7 @@ class WidgetFigure(BasicFigure):
         scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cmap)
         color = scalarMap.to_rgba(len(self.drawn_lines) + 1)
         text = 'line ' + str(len(self.drawn_lines))
-        line = AnnotatedLine(self.axes_selector,x0, y0, x1, y1,text=text,color=color)
+        line = AnnotatedLine(self.axes_selector,x0, y0, x1, y1, text=text, color=color)
         self.drawn_lines_names.append(line.text)
         self.drawn_lines.append(line)
         self.canvas.draw()

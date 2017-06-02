@@ -20,7 +20,7 @@ class WidgetFigureExample(HasTraits):
     data = Array
 
     @on_trait_change('fig.drawn_lines')
-    def update_line_list(self,obj):
+    def update_line_list(self, obj):
         self.line_list_ = self.fig.drawn_lines_names
         if self.line_sel:
             self.line_sel = self.fig.drawn_lines_names[0]
