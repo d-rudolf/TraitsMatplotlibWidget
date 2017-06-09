@@ -1,6 +1,5 @@
 from __future__ import division, print_function
 from pyface.qt import QtGui, QtCore
-
 try:
     import win32clipboard
     print("Using win32clipboard")
@@ -426,6 +425,12 @@ class BasicFigure(MinimalFigure):
     _xerr = Dict()
     _yerr = Dict()
 
+    x_first = Float()
+    x_second = Float()
+
+    y_first = Float()
+    y_second = Float()
+
     def __init__(self, **kwargs):
         super(BasicFigure, self).__init__(**kwargs)
         self.grid = True
@@ -442,7 +447,19 @@ class BasicFigure(MinimalFigure):
         else:
             label = kwargs['label']
 
-        return fmt, label
+        if 'text' in kwargs:
+            text = kwargs['text']
+            del kwargs['text']
+        else:
+            text = ''
+        # position of the text
+        if 'pos' in kwargs:
+            pos = kwargs['pos']
+            del kwargs['pos']
+        else:
+            pos = (0,0)
+
+        return fmt, label, text, pos
 
     def _mask_data(self, data):
         # fast when data is not too big (like 70M datapoints, but still works. Never possible with matplotlib)
@@ -838,7 +855,7 @@ class BasicFigure(MinimalFigure):
                 - (str) fmt         like in matplotlib errorbar(), but it is stupid to use it only in one function
         """
         self.img_bool = False
-        fmt, label = self._test_plot_kwargs(kwargs)
+        fmt, label, text, pos = self._test_plot_kwargs(kwargs)
         axes = self.get_axes()
         line = self._is_line_in_axes(label)
 
@@ -859,8 +876,10 @@ class BasicFigure(MinimalFigure):
             print(self.__class__.__name__, ": Plotting ", label)
             if type(ax) == int:
                 line = axes[ax].plot(x, y, fmt, **kwargs)
+                self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize=12)
             elif hasattr(ax, 'plot'):
                 line = ax.plot(x, y, fmt, **kwargs)
+                self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize=12)
             else:
                 raise TypeError('ax can be an int or the axis itself!')
 
@@ -870,6 +889,7 @@ class BasicFigure(MinimalFigure):
             if line.get_animated():
                 self.set_animation_for_lines(False)  # doesn't work otherwise, dunno why.
             line.set_data(x,y)
+            self.txt.set_text(text)
 
         if not nodraw:
             self._normalize_bool_changed()
@@ -930,7 +950,7 @@ class BasicFigure(MinimalFigure):
     def mpl_setup(self):
         print(self.__class__.__name__, ": Running mpl_setup - connecting button press events")
         self.canvas = self.figure.canvas  # creates link (same object)
-        cid = self.figure.canvas.mpl_connect('button_press_event', self.__onclick)
+        self.figure.canvas.mpl_connect('button_press_event', self.__onclick_and_draw)
 
     def __onclick(self, event):
         if event is None:
@@ -940,7 +960,39 @@ class BasicFigure(MinimalFigure):
             self.set_animation_for_lines(False)
         print(self.__class__.__name__, ": %s" % event)
 
-    def set_animation_for_lines(self, TF):
+    def __onclick_and_draw(self, event):
+        print("__onclick_and_draw")
+        if event is None:
+            return None
+        self.clickdata = (event.button, event.x, event.y, event.xdata, event.ydata)
+        # draw the first point
+        self.x_first = event.xdata
+        self.y_first = event.ydata
+        ax = self.figure.gca()
+        ax.plot(self.x_first, self.y_first, 'bo')
+        self.figure.canvas.draw()
+
+        if not self.img_bool:
+            self.setAnimationForLines(False)
+
+        self.figure.canvas.mpl_connect('button_release_event', self.__move_and_draw)
+
+    def __move_and_draw(self, event):
+        print("__move_and_draw")
+        if event is None:
+            return None
+        ax = self.figure.gca()
+        if ax.lines:
+        # remove old lines
+            ax.lines = []
+            print('ax.lines {}'.format(ax.lines[:]))
+
+        self.x_second, self.y_second = event.xdata, event.ydata
+        print('BasicFigure: xdata: {}, ydata: {}'.format(self.x_second, self.y_second))
+        ax.plot([self.x_first, self.x_second], [self.y_first, self.y_second], '-', color = 'black', linewidth = 5)
+        self.figure.canvas.draw()
+
+    def setAnimationForLines(self, TF):
         self.animated = TF
         axes = self.get_axes()
         for ax in axes:
