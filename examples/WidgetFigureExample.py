@@ -108,7 +108,6 @@ class WidgetFigureExample(HasTraits):
         return view
 
 
-
 if __name__ == '__main__':
     basic_figure_test = WidgetFigureExample()
     basic_figure_test.configure_traits()
