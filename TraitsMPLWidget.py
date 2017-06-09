@@ -67,7 +67,6 @@ class _ScrollableMPLFigureEditor(Editor):
         frame_canvas.setLayout(vbox)
         return frame_canvas
 
-
 class _MPLFigureEditor(Editor):
     canvas = Instance(FigureCanvas)
     toolbar = Instance(NavigationToolbar2QT)
