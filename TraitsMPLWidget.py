@@ -99,7 +99,7 @@ class _MPLFigureEditor(Editor):
 
 class MPLFigureEditor(BasicEditorFactory):
     klass = _MPLFigureEditor
-
+    
 
 class ScrollableMPLFigureEditor(BasicEditorFactory):
     klass = _ScrollableMPLFigureEditor
