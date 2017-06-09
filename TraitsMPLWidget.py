@@ -28,7 +28,6 @@ from DraggableResizableRectangle import DraggableResizeableRectangle, AnnotatedR
 
 import cPickle, wx
 
-
 __author__ = 'd.wilson'
 
 app = wx.App(False)
