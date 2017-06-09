@@ -11,7 +11,6 @@ import matplotlib as mpl
 mpl.use('Qt4Agg')
 import numpy as np
 import matplotlib.pyplot as plt
-#import useful as usf
 
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
@@ -24,7 +23,7 @@ from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.widgets import RectangleSelector, SpanSelector
-from DraggableResizableRectangle import DraggableResizeableRectangle, AnnotatedRectangle
+from DraggableResizableRectangle import DraggableResizeableRectangle, AnnotatedRectangle, AnnotatedLine, DraggableResizeableLine
 
 import cPickle, wx
 
@@ -340,9 +339,9 @@ class MinimalFigure(HasTraits):
     def _save_fig_btn_fired(self):
         dlg = FileDialog(action='save as')
         if dlg.open() == OK:
-            self.savefig(dlg.filename + ".png", dpi=300)
-            self.savefig(dlg.filename + ".eps")
-            self.savefig(dlg.filename + ".pdf")
+            self.savefig(dlg.path + ".png", dpi=300)
+            self.savefig(dlg.path + ".eps")
+            self.savefig(dlg.path + ".pdf")
             # cPickle.dump(self, open("dlg.filename" + ".pkl", "wb"))
 
     def savefig(self, *args, **kwargs):
@@ -895,6 +894,7 @@ class BasicFigure(MinimalFigure):
         if not nodraw:
             self._normalize_bool_changed()
             self.draw()  # draws with respect to autolim etc.
+            # self.start_thread('draw()')  # kind of working ...
 
         if hasattr(line, "append"):
             return line[0]
@@ -1115,27 +1115,115 @@ class BasicFigure(MinimalFigure):
 
 
 class WidgetFigure(BasicFigure):
-    selector_btn = Button('Selector')
-    selectionPatches = List()  # contains patches for image stack analysis
-    selectionPatches_names=Float()
-    clearPatchesBtn = Button('Clear Patches')
     nColorsFromColormap = Int(5)
 
-    def _selector_btn_fired(self):
-        self.connectSelector()
+    unlock_all_btn = Button('(Un-) Lock')
+    widget_list = List()
+    widget_sel = Enum(values='widget_list')
+    widget_clear_btn = Button('Clear Current Widgets')
 
-    def connectSelector(self):
-        print(self.__class__.__name__, ": Connecting Selector")
-        self.rs = RectangleSelector(self.axes_selector, self.rectangleSelectorFunc, drawtype='box', useblit=True, button=[3])
+    drawn_patches = List()
+    drawn_patches_names=List()
 
-    def get_selectionPatches_names(self):
-        self.selectionPatches_names = []
-        for i in self.selectionPatches:
-            self.selectionPatches_names.append(i.text)
+    drawn_lines = List()
+    drawn_lines_names=List()
 
-        return self.selectionPatches_names
+    def _widget_list_default(self):
+        w = list()
+        w.append('Line Selector')
+        w.append('Rectangle Selector')
+        return w
 
-    def rectangleSelectorFunc(self, eclick, erelease, cmap=mpl.cm.jet):
+    def _widget_sel_default(self):
+        w = 'Line Selector'
+        return w
+
+    def _widget_clear_btn_fired(self):
+        if self.widget_sel == self.widget_list[0]:
+            self.clear_lines()
+
+        if self.widget_sel == self.widget_list[1]:
+            self.clear_patches()
+
+    @on_trait_change('widget_sel')
+    def set_selector(self,widget):
+        if widget == self.widget_list[0]:
+            self._line_selector()
+
+        if widget == self.widget_list[1]:
+            self._rec_selector()
+
+    def act_all(self):
+        for i in self.drawn_patches: i.connect()
+        for i in self.drawn_lines: i.connect()
+
+    def _line_selector(self):
+        try:
+            self.rs.disconnect_events()
+            DraggableResizeableRectangle.lock = True
+            print('Rectangles are locked')
+
+        except:
+            print('Rectangles could not be locked')
+
+        print(self.__class__.__name__, ": Connecting Line Selector")
+        DraggableResizeableLine.lock = None
+        self.ls = RectangleSelector(self.axes_selector, self.line_selector_func, drawtype='line', useblit=True, button=[3])
+
+    def line_selector_func(self,eclick,erelease,cmap=mpl.cm.jet):
+        print(self.__class__.__name__, "Line Selector:")
+        print(self.__class__.__name__, "eclick: {} \n erelease: {}".format(eclick, erelease))
+        print()
+
+        x0, y0 = eclick.xdata, eclick.ydata
+        x1, y1 = erelease.xdata, erelease.ydata
+
+        cNorm = mpl.colors.Normalize(vmin=0, vmax=self.nColorsFromColormap)
+        scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cmap)
+        color = scalarMap.to_rgba(len(self.drawn_lines) + 1)
+        text = 'line ' + str(len(self.drawn_lines))
+        line = AnnotatedLine(self.axes_selector,x0, y0, x1, y1, text=text, color=color)
+        self.drawn_lines_names.append(line.text)
+        self.drawn_lines.append(line)
+        self.canvas.draw()
+
+    def get_widget_line(self, line_name):
+        line_handle = None
+        for i, line in enumerate(self.drawn_lines):
+            if line.text == line_name:
+                line_handle = line
+                break
+        return line_handle
+
+    def clear_lines(self):
+        print(self.__class__.__name__, ": Clearing selection lines")
+        if len(self.drawn_lines) != 0:
+            print(self.__class__.__name__, ": Clearing selection lines")
+            for l in self.drawn_lines:
+                try:
+                    l.remove()
+                except ValueError:
+                    print(self.__class__.__name__, ": Line was not found.")
+            self.drawn_lines = []
+            self.drawn_lines_names = []
+
+        self.canvas.draw()
+
+    def _rec_selector(self):
+        try:
+            self.ls.disconnect_events()
+            DraggableResizeableLine.lock = True
+            print('Line Selector is locked')
+        except:
+            print('Line Selector could not be locked')
+        DraggableResizeableRectangle.lock = None
+
+        print(self.__class__.__name__, ": Connecting Rectangle Selector")
+
+        self.rs = RectangleSelector(self.axes_selector, self.rectangle_selector_func, drawtype='box', useblit=True, button=[3])
+
+
+    def rectangle_selector_func(self, eclick, erelease, cmap=mpl.cm.jet):
         """
             Usage:
             @on_trait_change('fig:selectionPatches:rectUpdated')
@@ -1154,35 +1242,39 @@ class WidgetFigure(BasicFigure):
         cNorm = mpl.colors.Normalize(vmin=0, vmax=self.nColorsFromColormap)
         scalarMap = mpl.cm.ScalarMappable(norm=cNorm, cmap=cmap)
 
-        color = scalarMap.to_rgba(len(self.selectionPatches) + 1)
+        color = scalarMap.to_rgba(len(self.drawn_patches) + 1)
 
-        self.anRect = AnnotatedRectangle(self.axes_selector, x1, y1, x2, y2, 'region ' + str(len(self.selectionPatches)), color=color)
-        self.selectionPatches.append(self.anRect)
-
+        self.an_rect = AnnotatedRectangle(self.axes_selector, x1, y1, x2, y2, 'region ' + str(len(self.drawn_patches)), color=color)
+        self.drawn_patches_names.append(self.an_rect.text)
+        self.drawn_patches.append(self.an_rect)
         self.canvas.draw()
 
-    def get_SelectedPatch(self, patch):
-        for i, rect in enumerate(self.selectionPatches):
-            if rect.text == patch:
+    def get_widget_patch(self, patch_name):
+        patch = None
+        for i, rect in enumerate(self.drawn_patches):
+            if rect.text == patch_name:
+                patch = rect
                 break
+        return patch
 
-        return self.selectionPatches[i]
 
-
-    def _clearPatchesBtn_fired(self):
-        self.clear_selectionPatches()
-
-    def clear_selectionPatches(self):
-        if len(self.selectionPatches) != 0:
+    def clear_patches(self):
+        if len(self.drawn_patches) != 0:
             print(self.__class__.__name__, ": Clearing selection patches")
-            for p in self.selectionPatches:
+            for p in self.drawn_patches:
                 try:
                     p.remove()
                 except ValueError:
                     print(self.__class__.__name__, ": Patch was not found.")
-
-            self.selectionPatches = []
+            DraggableResizeableLine.reset_borders()
+            DraggableResizeableRectangle.reset_borders()
+            self.drawn_patches = []
             self.canvas.draw()
+
+    def clear_widgets(self):
+        self.clear_patches()
+        self.clear_lines()
+
 
     def options_group(self):
         g = HGroup(
@@ -1191,13 +1283,20 @@ class WidgetFigure(BasicFigure):
             UItem('line_selector', visible_when='not img_bool'),
             UItem('copy_data_btn', visible_when='not img_bool'),
             HGroup(
-                Item('normalize_bool', label='normalize'),
-                Item('log_bool', label='log scale'),
-                Item('cmap_selector', label='cmap', visible_when='img_bool'),
-                UItem('image_slider_btn', visible_when='img_bool'),
-                UItem('save_fig_btn'),
-                UItem('selector_btn'),
-                UItem('clearPatchesBtn'),
+                VGroup(
+                    HGroup(
+                        Item('normalize_bool', label='normalize'),
+                        Item('log_bool', label='log scale'),
+                        Item('cmap_selector', label='cmap', visible_when='img_bool'),
+                        UItem('image_slider_btn', visible_when='img_bool'),
+                        UItem('save_fig_btn'),
+                    ),
+                    HGroup(
+                        UItem('widget_sel'),
+                        UItem('widget_clear_btn'),
+                    )
+                )
+
             ),
         )
         return g
