@@ -1,10 +1,10 @@
 from __future__ import print_function, division
-
-from TraitsMPLWidget import WidgetFigure, BasicFigure
-
+import sys
 from traits.api import HasTraits, Instance, Array, on_trait_change, List, Enum
 from traitsui.api import View, UItem, HGroup, VGroup, Item
 import numpy as np
+sys.path.append('../traits_files/')
+from traits_mpl_widget import WidgetFigure, BasicFigure
 
 class WidgetFigureExample(HasTraits):
     fig = Instance(WidgetFigure)
