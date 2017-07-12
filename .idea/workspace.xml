@@ -2,61 +2,30 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dbdccdff-f707-4cbc-91f6-2a74d495c802" name="Default" comment="Changes 12.07.2017">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Traits/.ipynb_checkpoints/Traits-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/000_BiTe_EUV_1-8kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/001_BiTe_EUV_2kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/002_BiTe_EUV_2-2kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/003_BiTe_EUV_2-4kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/004_BiTe_EUV_2-6kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/005_BiTe_EUV_2-8kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/006_BiTe_EUV_3kV_1500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/007_BiTe_EUV_1-8kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/007_BiTe_HG_Slit_05_optimizing_001.tif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/008_BiTe_EUV_2kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/009_BiTe_EUV_2-2kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/010_BiTe_EUV_2-4kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/011_BiTe_EUV_2-6kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/012_BiTe_EUV_2-8kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/013_BiTe_EUV_3kV_2000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/014_BiTe_EUV_3kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/015_BiTe_EUV_2-8kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/016_BiTe_EUV_2-6kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/017_BiTe_EUV_2-4kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/018_BiTe_EUV_2-2kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/019_BiTe_EUV_2kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/020_BiTe_EUV_1-8kV_1000Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/021_BiTe_EUV_2kV_2500Hz_001.TIF" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/test.tif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/.ipynb_checkpoints/Test-4-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/ImgRW.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/Test-1.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/Test-2.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/Test-3.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/Test-4.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/Test.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/test.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/traits_files/test_image.p" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/traits_files/test_line.p" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/TraitsMatplotlibWidget.iml" afterPath="$PROJECT_DIR$/.idea/TraitsMatplotlibWidget.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/encodings.xml" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/001_BiTe_EUV_2kV_1500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/001_BiTe_EUV_2kV_1500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/002_BiTe_EUV_2-2kV_1500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/002_BiTe_EUV_2-2kV_1500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/003_BiTe_EUV_2-4kV_1500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/003_BiTe_EUV_2-4kV_1500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/004_BiTe_EUV_2-6kV_1500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/004_BiTe_EUV_2-6kV_1500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/005_BiTe_EUV_2-8kV_1500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/005_BiTe_EUV_2-8kV_1500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/006_BiTe_EUV_3kV_1500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/006_BiTe_EUV_3kV_1500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/007_BiTe_EUV_1-8kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/007_BiTe_EUV_1-8kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/007_BiTe_HG_Slit_05_optimizing_001.tif" afterPath="$PROJECT_DIR$/data/007_BiTe_HG_Slit_05_optimizing_001.tif" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/008_BiTe_EUV_2kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/008_BiTe_EUV_2kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/009_BiTe_EUV_2-2kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/009_BiTe_EUV_2-2kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/010_BiTe_EUV_2-4kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/010_BiTe_EUV_2-4kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/011_BiTe_EUV_2-6kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/011_BiTe_EUV_2-6kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/012_BiTe_EUV_2-8kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/012_BiTe_EUV_2-8kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/013_BiTe_EUV_3kV_2000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/013_BiTe_EUV_3kV_2000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/014_BiTe_EUV_3kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/014_BiTe_EUV_3kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/015_BiTe_EUV_2-8kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/015_BiTe_EUV_2-8kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/016_BiTe_EUV_2-6kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/016_BiTe_EUV_2-6kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/017_BiTe_EUV_2-4kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/017_BiTe_EUV_2-4kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/018_BiTe_EUV_2-2kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/018_BiTe_EUV_2-2kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/019_BiTe_EUV_2kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/019_BiTe_EUV_2kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/020_BiTe_EUV_1-8kV_1000Hz_001.TIF" afterPath="$PROJECT_DIR$/data/020_BiTe_EUV_1-8kV_1000Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/021_BiTe_EUV_2kV_2500Hz_001.TIF" afterPath="$PROJECT_DIR$/data/021_BiTe_EUV_2kV_2500Hz_001.TIF" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data/test.tif" afterPath="$PROJECT_DIR$/data/test.tif" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/examples/BasicFigureExample.py" afterPath="$PROJECT_DIR$/examples/BasicFigureExample.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/.ipynb_checkpoints/Test-3-checkpoint.ipynb" afterPath="$PROJECT_DIR$/tests/.ipynb_checkpoints/Test-3-checkpoint.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/notebooks/.ipynb_checkpoints/Test-4-checkpoint.ipynb" afterPath="$PROJECT_DIR$/tests/notebooks/.ipynb_checkpoints/Test-4-checkpoint.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/notebooks/Test-4.ipynb" afterPath="$PROJECT_DIR$/tests/notebooks/Test-4.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_image.p" afterPath="$PROJECT_DIR$/tests/test_image.p" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_line.p" afterPath="$PROJECT_DIR$/tests/test_line.p" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_lineprofiler.py" afterPath="$PROJECT_DIR$/tests/test_lineprofiler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/traits_files/.ipynb_checkpoints/Traits-checkpoint.ipynb" afterPath="$PROJECT_DIR$/traits_files/.ipynb_checkpoints/Traits-checkpoint.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/traits_files/img_rw.py" afterPath="$PROJECT_DIR$/traits_files/img_rw.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/traits_files/lineprofiler.py" afterPath="$PROJECT_DIR$/traits_files/lineprofiler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/traits_files/mathtools.py" afterPath="$PROJECT_DIR$/traits_files/mathtools.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/traits_files/model.py" afterPath="$PROJECT_DIR$/traits_files/model.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/traits_files/traits_mpl_widget.py" afterPath="$PROJECT_DIR$/traits_files/traits_mpl_widget.py" />
     </list>
     <ignored path="TraitsMatplotlibWidget.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -97,11 +66,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="lineprofiler.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="lineprofiler.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/traits_files/lineprofiler.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="336">
-              <caret line="16" column="26" lean-forward="true" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
+              <caret line="16" column="26" lean-forward="false" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
               <folding>
                 <element signature="e#1#56#0" expanded="true" />
               </folding>
@@ -234,11 +203,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="model.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="model.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/traits_files/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="172">
-              <caret line="77" column="10" lean-forward="false" selection-start-line="77" selection-start-column="10" selection-end-line="77" selection-end-column="10" />
+            <state relative-caret-position="109">
+              <caret line="74" column="21" lean-forward="false" selection-start-line="74" selection-start-column="21" selection-end-line="74" selection-end-column="21" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
               </folding>
@@ -387,6 +356,20 @@
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="TraitsMatplotlibWidget" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="TraitsMatplotlibWidget" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="traits_files" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="TraitsMatplotlibWidget" />
@@ -719,7 +702,21 @@
       <option name="project" value="LOCAL" />
       <updated>1499717833350</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Changes 12.07.2017">
+      <created>1499890551923</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1499890551923</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Changes 12.07.2017">
+      <created>1499890645609</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1499890645609</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -822,8 +819,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/TraitsMPLWidget_old.py" />
-    <entry file="file://$PROJECT_DIR$/ThreadedHasTraits.py" />
     <entry file="file://$PROJECT_DIR$/studentMain.py" />
     <entry file="file://$PROJECT_DIR$/class_vis.py" />
     <entry file="file://$PROJECT_DIR$/prep_terrain_data.py" />
@@ -972,13 +967,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/traits_files/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/traits_files/plot_demo.py" />
     <entry file="file://D:/Anaconda2/Lib/site-packages/traits/trait_notifiers.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1116,22 +1104,40 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/traits_files/lineprofiler.py">
+    <entry file="file://$PROJECT_DIR$/traits_files/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="16" column="26" lean-forward="true" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
+        <state relative-caret-position="109">
+          <caret line="74" column="21" lean-forward="false" selection-start-line="74" selection-start-column="21" selection-end-line="74" selection-end-column="21" />
           <folding>
-            <element signature="e#1#56#0" expanded="true" />
+            <element signature="e#0#30#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/traits_files/model.py">
+    <entry file="file://$PROJECT_DIR$/data/001_BiTe_EUV_2kV_1500Hz_001.TIF">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/000_BiTe_EUV_1-8kV_1500Hz_001.TIF">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/traits_files/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="77" column="10" lean-forward="false" selection-start-line="77" selection-start-column="10" selection-end-line="77" selection-end-column="10" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/traits_files/lineprofiler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="16" column="26" lean-forward="false" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
           <folding>
-            <element signature="e#0#30#0" expanded="true" />
+            <element signature="e#1#56#0" expanded="true" />
           </folding>
         </state>
       </provider>
