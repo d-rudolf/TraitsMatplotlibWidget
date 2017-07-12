@@ -1,10 +1,10 @@
 
-from traits_mpl_widget import BasicFigure
+from traits_files.traits_mpl_widget import BasicFigure
 from ThreadedHasTraits import tHasTraits as ThreadedHasTraits
 from traits.api import List, Enum, Directory, Instance, Array, Str, Bool, Float, on_trait_change
 from traitsui.api import View, HGroup, VGroup, Item, UItem
 
-from mathtools import MathUtil
+from traits_files.mathtools import MathUtil
 
 import numpy as np
 import img_rw as Im

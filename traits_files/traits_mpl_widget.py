@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+
 from pyface.qt import QtGui, QtCore
 
 try:
@@ -16,17 +17,17 @@ import matplotlib.pyplot as plt
 from traitsui.qt4.editor import Editor
 from traitsui.qt4.basic_editor_factory import BasicEditorFactory
 from traits.api import Instance, HasTraits, Int, Str, Float, List, Array, Bool, Tuple, Button, Dict, Enum, Range, on_trait_change
-from traitsui.api import Handler, View, Item, UItem, CheckListEditor, HGroup, VGroup, Include
+from traitsui.api import Handler, View, Item, UItem, HGroup, VGroup, Include
 from pyface.api import FileDialog, OK
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
-from matplotlib.widgets import RectangleSelector, SpanSelector
-from drag_resize_rect import DraggableResizeableRectangle, AnnotatedRectangle, AnnotatedLine, DraggableResizeableLine
+from matplotlib.widgets import RectangleSelector
+from etc.drag_resize_rect import DraggableResizeableRectangle, AnnotatedRectangle, AnnotatedLine, DraggableResizeableLine
 
-import cPickle, wx
+import wx
 
 __author__ = 'd.wilson'
 
