@@ -1,8 +1,9 @@
 from __future__ import print_function, division
 
 import numpy as np
-
-from TraitsMPLWidget import BasicFigure, MPLFigureEditor, MPLInitHandler
+import sys
+sys.path.append('../traits_files')
+from traits_mpl_widget import BasicFigure, MPLFigureEditor, MPLInitHandler
 from traits.api import Range, Button, List, Int
 from traitsui.api import View, UItem, Item, Include, HGroup
 

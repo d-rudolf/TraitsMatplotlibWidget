@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.interpolate import griddata
 from scipy.interpolate import RectBivariateSpline
-from scipy.interpolate import interp2d, interp1d
+from scipy.interpolate import interp2d, interp1d, RectBivariateSpline
+from scipy.ndimage.interpolation import rotate
 from scipy.optimize import curve_fit
 from scipy.special import erf
 from sklearn.cluster import KMeans
@@ -10,7 +11,7 @@ import matplotlib.pyplot as plt
 
 class MathUtil():
 
-    def get_line_func(self, x1,x2,y1,y2):
+    def get_line_func(self, x1, x2, y1, y2):
         """
         :param x1: x coordinate first point
         :param x2: x coordinate second point
@@ -23,7 +24,8 @@ class MathUtil():
         print ('y1: {}'.format(y1))
         print ('x2: {}'.format(x2))
         print ('y2: {}'.format(y2))
-        t = np.arange(0,1,1e-3)
+        step_size = 1e-3
+        t = np.arange(0,1,step_size)
         x = x1+(x2-x1)*t
         y = y1+(y2-y1)*t
         #xx = [[i] for i in x]
@@ -31,7 +33,29 @@ class MathUtil():
         #return np.concatenate((yy,xx), axis = 1)
         return x,y
 
-    def interpolate(self, im, x,y):
+    def get_normal(self, x1, x2, y1, y2):
+        """
+        calculates the normalized normal vector to the straight line defined by x1, x2, y1, y2
+        :param x1: 
+        :param x2: 
+        :param y1: 
+        :param y2: 
+        :return: normalized normal vector with one component = 1 and one component < 1
+        """
+        delta_x = float(x1-x2)
+        delta_y = float(y1-y2)
+        if delta_y != 0:
+            n1 = 1.0
+            n2 = -delta_x/delta_y
+            if abs(n2) > 1.0:
+                n1 = n1/n2
+                n2 = 1.0
+        else:
+            n1 = 0.0
+            n2 = 1.0
+        return n1,n2
+
+    def interpolate(self, im, x, y):
         """
         :param im: image
         :param x,y: arrays of points at which to interpolate
@@ -40,15 +64,18 @@ class MathUtil():
         print('interpolating ...')
         width = im.shape[1]
         height = im.shape[0]
-        list_y, list_x =range(1,height+1,1), range(1,width+1,1)
+        list_y, list_x =range(0,height,1), range(0,width,1)
        #points = np.array([[i,j] for i in list_y for j in list_x])
        #values = im.flatten()
        #return griddata(points, values, x_i, method='nearest')
-        f = interp2d(list_x,list_y,im, kind='cubic')
-        image_interpolated = f(x,y)
-        size = image_interpolated.shape[0]
-        coord = range(0, size, 1)
-        return image_interpolated[coord, coord]
+        f = RectBivariateSpline(list_y, list_x, im, kx=2, ky=2)
+        image_interpolated = [f(y[i], x[i])[0][0] for i in range(0,np.shape(x)[0])]
+        print ('size x: {0}, size y: {1}, size image_interpolated {2}'.format(np.shape(x), np.shape(y),
+                np.shape(image_interpolated)))
+        print (image_interpolated)
+        #size = image_interpolated.shape[0]
+        #coord = range(0, size, 1)
+        return np.array(image_interpolated)
 
 
     def get_dist_vec(self,x,y):
@@ -76,7 +103,7 @@ class MathUtil():
         :param offeset: y offset
         :return: (fitted parameters, covariance matrix)
         """
-        fit = curve_fit(self.func,x,y,p0=[a,sigma,x_0,offset])
+        fit = curve_fit(self.func,x,y,p0=[a,sigma,x_0,offset], maxfev = int(1e3))
         print ('a: {0:.2f}'.format(fit[0][0]))
         print ('sigma: {0:.2f}'.format(fit[0][1]))
         print ('x_0: {0:.2f}'.format(fit[0][2]))
@@ -121,7 +148,7 @@ class MathUtil():
         """
         finds the plateaus in the clusters (to calculate the y half width later)
         :param cluster1, cluster2    
-        :return: plateau region of two cluster
+        :return: plateau region of two cluster 
         """
         def norm(data):
             """
@@ -172,8 +199,9 @@ class MathUtil():
             return cluster
 
         cluster = [cluster1, cluster2]
+        num_it = 2
         for elem in cluster:
-            data = clean_data(elem, 10)
+            data = clean_data(elem, num_it)
             if elem == cluster1:
                 cluster1_clean_x = data[0]
                 cluster1_clean_y = data[1]
@@ -224,3 +252,12 @@ class MathUtil():
         f_right = interp1d(y_right, x_right, kind='linear')
         fwhm = abs(f_left(hm)-f_right(hm))
         return fwhm,[f_left(hm),f_right(hm)],[hm,hm]
+
+    def rotate_array(self, arr, angle):
+        return rotate(arr, angle)
+
+if __name__ == '__main__':
+
+    MU = MathUtil()
+    norm = MU.get_normal(1,500,1,100)
+    print(norm)

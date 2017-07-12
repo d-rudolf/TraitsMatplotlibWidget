@@ -435,13 +435,23 @@ class BasicFigure(MinimalFigure):
             del kwargs['fmt']
         else:
             fmt = ''
-
         if 'label' not in kwargs:
             raise Exception("BasicFigure: Please provide a label for datapoints.")
         else:
             label = kwargs['label']
+        if 'text' in kwargs:
+            text = kwargs['text']
+            del kwargs['text']
+        else:
+            text = ''
+        # position of the text
+        if 'pos' in kwargs:
+            pos = kwargs['pos']
+            del kwargs['pos']
+        else:
+            pos = (0,0)
+        return fmt, label, text, pos
 
-        return fmt, label
 
     def _mask_data(self, data):
         # fast when data is not too big (like 70M datapoints, but still works. Never possible with matplotlib)
@@ -837,7 +847,7 @@ class BasicFigure(MinimalFigure):
                 - (str) fmt         like in matplotlib errorbar(), but it is stupid to use it only in one function
         """
         self.img_bool = False
-        fmt, label = self._test_plot_kwargs(kwargs)
+        fmt, label, text, pos = self._test_plot_kwargs(kwargs)
         axes = self.get_axes()
         line = self._is_line_in_axes(label)
 
@@ -858,8 +868,10 @@ class BasicFigure(MinimalFigure):
             print(self.__class__.__name__, ": Plotting ", label)
             if type(ax) == int:
                 line = axes[ax].plot(x, y, fmt, **kwargs)
+                self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize=12)
             elif hasattr(ax, 'plot'):
                 line = ax.plot(x, y, fmt, **kwargs)
+                self.txt = axes[ax].text(pos[0], pos[1], text, transform=axes[ax].transAxes, fontsize=12)
             else:
                 raise TypeError('ax can be an int or the axis itself!')
 
@@ -869,6 +881,7 @@ class BasicFigure(MinimalFigure):
             if line.get_animated():
                 self.set_animation_for_lines(False)  # doesn't work otherwise, dunno why.
             line.set_data(x,y)
+            self.txt.set_text(text)
 
         if not nodraw:
             self._normalize_bool_changed()
