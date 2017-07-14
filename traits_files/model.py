@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 class Model(object):
     def __init__(self):
+        print('Init in {0}.'.format(__name__))
         self.x1, self.x2, self.y1, self.y2 = 0, 0, 0, 0
         self.image = []
         self.MU = MathUtil()
@@ -109,11 +110,12 @@ class Model(object):
         #self.line = np.array(lines).mean(axis = 0)
         self.line = np.array(lines).sum(axis = 0)
         self.fit()
-        self.get_10_90()
+#        self.get_10_90()
 
 class AutomatizeModel(Model):
 
     def __init__(self):
+        print('Init in {0}.'.format(__name__))
         super(AutomatizeModel, self).__init__()
         self.volt = ''
         self.freq = ''
@@ -137,7 +139,8 @@ class AutomatizeModel(Model):
                self.image = self.read_tif_image(filename)
                self.main_loop(x1, x2, y1, y2, self.image, num_lines)
                # factor 2.56 for the 10/90 criterion
-               self.sigma, self.sigma_err = 2.56 * self.param[0][1], 2.56 * self.param[1][1][1]
+               if self.param:
+                    self.sigma, self.sigma_err = 2.56 * self.param[0][1], 2.56 * self.param[1][1][1]
                #print (self.sigma, self.sigma_err)
                self.store()
                print (self.data)

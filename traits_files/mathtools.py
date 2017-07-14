@@ -72,7 +72,6 @@ class MathUtil():
         image_interpolated = [f(y[i], x[i])[0][0] for i in range(0,np.shape(x)[0])]
         print ('size x: {0}, size y: {1}, size image_interpolated {2}'.format(np.shape(x), np.shape(y),
                 np.shape(image_interpolated)))
-        print (image_interpolated)
         #size = image_interpolated.shape[0]
         #coord = range(0, size, 1)
         return np.array(image_interpolated)
@@ -103,6 +102,7 @@ class MathUtil():
         :param offeset: y offset
         :return: (fitted parameters, covariance matrix)
         """
+
         fit = curve_fit(self.func,x,y,p0=[a,sigma,x_0,offset], maxfev = int(1e3))
         print ('a: {0:.2f}'.format(fit[0][0]))
         print ('sigma: {0:.2f}'.format(fit[0][1]))
@@ -113,7 +113,8 @@ class MathUtil():
         print (' {} '.format(fit[1][1]))
         print (' {} '.format(fit[1][2]))
         print (' {} '.format(fit[1][3]))
-
+        return fit
+        print('Error: {0}'.format(err))
         return fit
 
     def func(self,x,a,sigma,x_0,offset):

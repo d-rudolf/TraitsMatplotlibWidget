@@ -28,12 +28,30 @@ class reader(HasTraits):
         self.files = glob.glob(self.path)
 
     def _files_sel_changed(self):
-        print ('Angle changed to {0:.3f}.'.format(self.angle))
         img = Image.open(self.files_sel)
         w, h = img.size[0], img.size[1]
         current_image = np.array(img.getdata()).reshape(h,w)
-        self.current_image = rotate(current_image, self.angle)
+        self.current_image = rotate(current_image, self.angle, reshape=False)
 
+    @on_trait_change('angle')
+    def _change_angle(self):
+        """
+        Calculation of the default angle value
+        >>> import numpy as np
+        >>> x1 = 359
+        >>> y1 = 31
+        >>> x2 = 320
+        >>> y2 = 397
+        >>> vec_line = -np.array([x1,y1])+np.array([x2,y2]) 
+        >>> vec_y = np.array([0,1])
+        >>> value = np.inner(vec_line,vec_y)/(np.linalg.norm(vec_line)*np.linalg.norm(vec_y))))
+        >>> np.arccos(value)/np.pi*180
+        6.0823366932820901
+        """
+        image = self.current_image
+        # important: reshape = False to keep the same image size
+        self.current_image = rotate(image, self.angle, reshape=False)
+        print('Image size before rotation: {0}, after rotation {1}'.format(np.shape(image), np.shape(self.current_image)))
 
 class viewer(reader):
 
@@ -56,7 +74,7 @@ class viewer(reader):
             self.line_sel = self.fig.drawn_lines_names[0]
 
     @on_trait_change('current_image')
-    def plot_fig(self):
+    def _plot_fig(self):
         self.fig.imshow(self.current_image, origin = 'lower')
         #pkl.dump(self.current_image, open('test_image.p', 'wb'))
 
@@ -76,8 +94,8 @@ class viewer(reader):
         AutMod = AutomatizeModel()
         return AutMod
 
-    @on_trait_change('line_sel, fig:drawn_lines:lineReleased, num_lines')
-    def plot_line_fit(self):
+    @on_trait_change('current_image, line_sel, fig:drawn_lines:lineReleased, num_lines')
+    def _plot_line_fit(self):
         """
         plots the line profile, the error function fit and the vertical lines for the 10%/90% criterion
         """
@@ -113,23 +131,6 @@ class viewer(reader):
         """
         self.AutMod.loop(self.x1, self.x2, self.y1, self.y2,self.files, self.num_lines)
         self.AutMod.plot()
-
-    @on_trait_change('angle')
-    def change_angle(self):
-        """
-        Calculation of the default angle value
-        >>> import numpy as np
-        >>> x1 = 359
-        >>> y1 = 31
-        >>> x2 = 320
-        >>> y2 = 397
-        >>> vec_line = -np.array([x1,y1])+np.array([x2,y2]) 
-        >>> vec_y = np.array([0,1])
-        >>> value = np.inner(vec_line,vec_y)/(np.linalg.norm(vec_line)*np.linalg.norm(vec_y))))
-        >>> np.arccos(value)/np.pi*180
-        6.0823366932820901
-        """
-        self.current_image = rotate(self.current_image, self.angle)
 
     def traits_view(self):
         view = View(
